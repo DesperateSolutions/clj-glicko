@@ -1,7 +1,7 @@
 (ns user
   (:require 
    [clojure.tools.namespace.repl :refer [refresh refresh-all]]
-   [ardoq.user-tools :as tool]))
+   [ratings.elo :as elo]))
 
 (def system
   "A Var containing an object representing the application under

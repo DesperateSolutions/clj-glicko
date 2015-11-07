@@ -2,6 +2,7 @@
   (:require [compojure.core :refer :all]
             [compojure.route :as route]
             [clostache.parser :as tpl]
+            [ratings.glicko :as glicko]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]))
 
 
@@ -13,7 +14,7 @@
                    headers :headers
                    params  :query-params}
        {:status 200
-        :body (tpl/render-resource "players.html" {})
+        :body (tpl/render-resource "players.html" (glicko/get-players))
         :headers {"Content-Type" "text/html"}})
 
   (POST "/game" {session :session

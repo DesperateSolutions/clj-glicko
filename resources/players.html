@@ -14,6 +14,10 @@
 
   </head>
   <body>
-    "Hello World!"
+    <ul>
+      {{#players}}
+        <li>{{name}} - {{rating}}</li>
+      {{/players}}
+    </ul>
   </body>
 </html>

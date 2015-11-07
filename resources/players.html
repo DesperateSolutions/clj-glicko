@@ -22,7 +22,7 @@
       <div>
         Player name
         <form action="/addplayer" method="POST" id="addplayer">
-          <input type="text" id="name">
+          <input type="text" id="name" name="name" required>
           <button type="submit">Add player</button>
         </form>
       </div>
@@ -36,15 +36,13 @@
         url: "/addplayer",
         data: $("form#addplayer").serialize(),
         success: function(data) {
-          window.location.assign("/");
+          window.href.assign("/");
         },
         error: function() {
         },
         statusCode: {
           406: function(msg) {
-            msg = JSON.parse(msg.responseJSON.error);
-            var result = "<p> ERROR: Couldn't add player</p>";
-            $("#error-dialog p").empty().html(result).parent().show();
+            msg = JSON.parse(msg.responseJSON.error);         
           }
         }
       });

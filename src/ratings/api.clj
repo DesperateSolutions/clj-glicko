@@ -4,7 +4,7 @@
             [clostache.parser :as tpl]
             [ratings.glicko :as glicko]
             [clojure.data.json :as json]
-            [ring.middleware.defaults :refer [wrap-defaults site-defaults]]))
+            [ring.middleware.defaults :refer [wrap-defaults api-defaults]]))
 
 (defroutes ratings-routes
   (route/resources "public")  
@@ -15,14 +15,38 @@
         :body (tpl/render-resource "players.html" (glicko/get-players))
         :headers {"Content-Type" "text/html"}})
 
-  (POST "/add-game" {{:strs [white black result] :as params} :form-params session :session}
+  (POST "/addgame" {{:strs [white black result] :as params} :form-params session :session}
          (try
            (glicko/score-game white black result)
            (catch com.fasterxml.jackson.core.JsonParseException e
              (.printStackTrace e)
              {:status 406
               :headers {"Content-Type" "application/json"}
-              :body (json/write-str {:error (str "Unable to parse swagger endpoint.")})})
+              :body (json/write-str {:error (str "Unable JSON.")})})
+           (catch IllegalArgumentException e
+             (.printStackTrace e)
+             {:status 406
+              :headers {"Content-Type" "application/json"}
+              :body (json/write-str {:error (.getMessage e)})})
+           (catch clojure.lang.ExceptionInfo e
+             (.printStackTrace e)
+             {:status 406
+              :headers {"Content-Type" "application/json"}
+              :body (json/write-str {:error (-> e ex-data :causes)})})
+           (catch Exception e
+             (.printStackTrace e)
+             {:status 500
+              :headers {"Content-Type" "application/json"}
+              :body (json/write-str {:error (str "An unexpected error occurred! ")})})))
+  
+  (POST "/addplayer" {{:strs [name] :as params} :form-params session :session}
+         (try
+           (str (glicko/add-new-player name))
+           (catch com.fasterxml.jackson.core.JsonParseException e
+             (.printStackTrace e)
+             {:status 406
+              :headers {"Content-Type" "application/json"}
+              :body (json/write-str {:error (str "Unable JSON.")})})
            (catch IllegalArgumentException e
              (.printStackTrace e)
              {:status 406
@@ -43,4 +67,4 @@
 
 
 (def app
-  (wrap-defaults ratings-routes site-defaults))
+  (wrap-defaults ratings-routes api-defaults))

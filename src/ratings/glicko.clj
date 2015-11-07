@@ -29,7 +29,7 @@
 (defn- get-db []
   (mg/get-db (mg/connect) "chess"))
 
-(defn- add-player [player] 
+(defn- update-player [player] 
   (let [db (get-db)]
     (mc/update db "players" {:_id (:_id player)} player {:upsert true})))
 
@@ -40,7 +40,8 @@
         d (get-d g e)
         new-rating (+ rating1 (* (/ q (+ (/ 1 (Math/pow rd1 2)) (/ 1 d))) g (- result e)))
         new-rd (new-rd rd1 d)]
-    (add-player (assoc player1 :rating new-rating :rating-rd new-rd))))
+    (update-player (assoc player1 :rating new-rating :rating-rd new-rd))))
+
 (defn get-players []
   (assoc nil :players (mc/find-maps (get-db) "players")))
 
@@ -54,3 +55,6 @@
         :else
         (do (update-rating player1 player2 0.5)
             (update-rating player2 player1 0.5))))
+
+(defn add-new-player [name] 
+  (mc/insert (get-db) "players" (assoc nil :_id (ObjectId.) :name name :rating 1200 :rating-rd 350)))

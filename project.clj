@@ -12,6 +12,7 @@
                  [clj-http "2.0.0"]
                  [cheshire "5.5.0"]
                  [compojure "1.4.0"]
+                 [org.clojure/data.json "0.2.5"]
                  [de.ubercode.clostache/clostache "1.4.0"]
                  [http-kit "2.1.19"]]
   :plugins [[lein-ring "0.9.7"]]

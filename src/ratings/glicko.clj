@@ -46,9 +46,13 @@
 (defn get-player-from-id [id]
   (mc/find-map-by-id (get-db) "players" (ObjectId. id)))
 
+(defn add-game [white black result]
+  (mc/insert (get-db) "games" (assoc nil :_id (ObjectId.) :white white :black black :result result)))
+
 (defn score-game [white-id black-id result]
   (let [player1 (get-player-from-id white-id)
         player2 (get-player-from-id black-id)]
+    (add-game white-id black-id result)
     (cond (= 1 result)
           (do (update-rating player1 player2 1)
               (update-rating player2 player1 0))

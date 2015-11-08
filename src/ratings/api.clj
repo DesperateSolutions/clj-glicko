@@ -15,9 +15,9 @@
         :body (tpl/render-resource "players.html" (glicko/get-players))
         :headers {"Content-Type" "text/html"}})
 
-  (POST "/addgame" {{:strs [white black result] :as params} :form-params session :session}
+  (POST "/addgame" {{:strs [white-id black-id result] :as params} :form-params session :session}
          (try
-           (glicko/score-game white black result)
+           (str (glicko/score-game white-id black-id result))
            (catch com.fasterxml.jackson.core.JsonParseException e
              (.printStackTrace e)
              {:status 406

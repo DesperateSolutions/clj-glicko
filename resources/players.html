@@ -26,6 +26,32 @@
           <button type="submit">Add player</button>
         </form>
       </div>
+      <br>
+      <br>
+      <br>
+      <div>
+        <form action="/addgame" method="POST" id="addgame">
+        White
+        <select name="white-id">
+          {{#players}}
+          <option value={{_id}}>{{name}}</option>
+          {{/players}}
+          </select>
+        Black
+        <select name="black-id">
+          {{#players}}
+          <option value={{_id}}>{{name}}</option>
+          {{/players}}
+          </select>
+        
+        <select name="result">
+          <option value=1>White won</option>
+          <option value=0>Draw</option>
+          <option value-1>Black won</option>
+          </select>
+        <button type="submit">Add game</button>
+        </form>
+      </div>
     
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script> 
     <script>
@@ -36,7 +62,26 @@
         url: "/addplayer",
         data: $("form#addplayer").serialize(),
         success: function(data) {
-          window.href.assign("/");
+          location.href = "/";
+        },
+        error: function() {
+        },
+        statusCode: {
+          406: function(msg) {
+            msg = JSON.parse(msg.responseJSON.error);         
+          }
+        }
+      });
+    });
+
+      $("form#addgame").on("submit", function(e) {
+      e.preventDefault();
+      $.ajax({
+      type: "POST",
+        url: "/addgame",
+        data: $("form#addgame").serialize(),
+        success: function(data) {
+          location.href = "/";
         },
         error: function() {
         },

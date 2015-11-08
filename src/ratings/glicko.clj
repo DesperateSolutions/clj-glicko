@@ -45,16 +45,22 @@
 (defn get-players []
   (assoc nil :players (mc/find-maps (get-db) "players")))
 
-(defn score-game [player1 player2 result]
-  (cond (= 1 result)
-        (do (update-rating player1 player2 1)
-            (update-rating player2 player1 0))
-        (= -1 result)
-        (do (update-rating player2 player1 1)
-            (update-rating player1 player2 0))
-        :else
-        (do (update-rating player1 player2 0.5)
-            (update-rating player2 player1 0.5))))
+(defn get-player-from-id [id]
+  (mc/find-map-by-id (get-db) "players" (ObjectId. id)))
+
+(defn score-game [white-id black-id result]
+  (let [player1 (get-player-from-id white-id)
+        player2 (get-player-from-id black-id)]
+    (println (str "White is " player1))
+    (cond (= 1 result)
+          (do (update-rating player1 player2 1)
+              (update-rating player2 player1 0))
+          (= -1 result)
+          (do (update-rating player2 player1 1)
+              (update-rating player1 player2 0))
+          :else
+          (do (update-rating player1 player2 0.5)
+              (update-rating player2 player1 0.5)))))
 
 (defn add-new-player [name] 
   (mc/insert (get-db) "players" (assoc nil :_id (ObjectId.) :name name :rating 1200 :rating-rd 350)))

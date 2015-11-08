@@ -38,7 +38,6 @@
         d (get-d g e)
         new-rating (+ rating1 (* (/ q (+ (/ 1 (Math/pow rd1 2)) (/ 1 d))) g (- result e)))
         new-rd (new-rd rd1 d)]
-    (println (str "Player " (:name player1) " new rating is " new-rating))
     (update-player (assoc player1 :rating new-rating :rating-rd new-rd))))
 
 (defn get-players []
@@ -50,9 +49,6 @@
 (defn score-game [white-id black-id result]
   (let [player1 (get-player-from-id white-id)
         player2 (get-player-from-id black-id)]
-    (println (str "White is " player1))
-    (println (str "Black is " player2))
-    (println (str "Result is " result))
     (cond (= 1 result)
           (do (update-rating player1 player2 1)
               (update-rating player2 player1 0))

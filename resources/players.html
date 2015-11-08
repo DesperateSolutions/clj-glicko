@@ -47,11 +47,18 @@
         <select name="result">
           <option value=1>White won</option>
           <option value=0>Draw</option>
-          <option value-1>Black won</option>
+          <option value=-1>Black won</option>
           </select>
         <button type="submit">Add game</button>
         </form>
       </div>
+      
+      <ul>
+        {{#games}}
+          <li>{{white}} vs {{black}} -- {{result}}</li>
+        {{/games}}
+      </ul>
+      
     
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script> 
     <script>

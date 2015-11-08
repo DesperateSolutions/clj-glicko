@@ -41,7 +41,26 @@
     (update-player (assoc player1 :rating new-rating :rating-rd new-rd))))
 
 (defn get-players []
-  (assoc nil :players (mc/find-maps (get-db) "players")))
+  (mc/find-maps (get-db) "players"))
+
+(defn get-games []
+  (let [db (get-db)
+        games (mc/find-maps db "games")]
+    (println games)
+    (doall (map (fn [{white :white black :black result :result}]
+                  (let [white-name (:name (mc/find-map-by-id db "players" (ObjectId. white)))
+                        black-name (:name (mc/find-map-by-id db "players" (ObjectId. black)))
+                        result-string (cond (= result 1) 
+                                            (str white-name " won!")
+                                            (= result -1)
+                                            (str black-name " won!")
+                                            :else
+                                            "Drawn!")]
+                    (assoc nil :white white-name :black black-name :result result-string)))
+                games))))
+
+(defn get-data []
+  (assoc nil :players (get-players) :games (get-games)))
 
 (defn get-player-from-id [id]
   (mc/find-map-by-id (get-db) "players" (ObjectId. id)))

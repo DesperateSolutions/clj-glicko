@@ -13,7 +13,7 @@
                    headers :headers
                    params  :query-params}
        {:status 200
-        :body (tpl/render-resource "players.html" (glicko/get-players))
+        :body (tpl/render-resource "players.html" (glicko/get-data))
         :headers {"Content-Type" "text/html"}})
 
   (POST "/addgame" {{:strs [white-id black-id result] :as params} :form-params session :session headers :headers}

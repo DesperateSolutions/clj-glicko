@@ -10,6 +10,8 @@ The project uses leinigen and mongo to run.
 
 To run the program you'll run it through Leinigen. To start it type 
 
-'''lein ring server-headless'''
+```
+lein ring server-headless
+```
 
 Will start the server

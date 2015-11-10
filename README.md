@@ -6,6 +6,13 @@ The goal of project is to make a suitable clojure application that can keep trac
 
 The project uses leinigen and mongo to run. 
 
+### Frontend dependencies
+
+Install frontend dependencies with:
+```
+bower install
+```
+
 ## Running the program
 
 To run the program you'll run it through Leinigen. To start it type 

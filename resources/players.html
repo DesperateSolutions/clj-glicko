@@ -1,108 +1,120 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>IFI Glicko</title>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IFI Glicko</title>
 
-    <link type="text/css" rel="stylesheet" href="bower_components/Materialize/dist/css/materialize.css"  media="screen,projection"/>
+  <link type="text/css" rel="stylesheet" href="bower_components/Materialize/dist/css/materialize.css"  media="screen,projection"/>
 
-    <script type="text/javascript" src="bower_components/jquery/dist/jquery.js"></script>
-    <script type="text/javascript" src="bower_components/Materialize/dist/js/materialize.js"></script>
+  <script type="text/javascript" src="bower_components/jquery/dist/jquery.js"></script>
+  <script type="text/javascript" src="bower_components/Materialize/dist/js/materialize.js"></script>
 
-  </head>
-  <body>
-  <nav class="green">
-    <div class="nav-wrapper container">
-      <a id="logo-container" href = "#" class="brand-logo">Ifi sjakk</a>
-    </div>
-  </nav>
-    <ul>
-      {{#players}}
-        <li>{{name}} - {{rating}}</li>
-      {{/players}}
-    </ul>
+</head>
+<body>
+<nav class="green">
+  <div class="nav-wrapper container">
+    <a id="logo-container" href = "#" class="brand-logo">Ifi sjakk</a>
+  </div>
+</nav>
 
-      <div>
-        Player name
+<div class="section no-pad-bot" id="index-banner">
+  <div class="container">
+    <h1 class="header green-text">Liga</h1>
+    <div class="row">
+      <div class="col s12 m8">
+        <h5 class="header light">League rating</h5>
+        <ul>
+          {{#players}}
+          <li>{{name}} - {{rating}}</li>
+          {{/players}}
+        </ul>
+      </div>
+      <div class="col s12 m4">
+        <h5 class="header light">Add players</h5>
         <form action="/addplayer" method="POST" id="addplayer">
-          <input type="text" id="name" name="name" required>
-          <button type="submit">Add player</button>
+          <input type="text" placeholder="Player name" id="name" name="name" required>
+          <button class="btn-large waves-effect waves-light green" type="submit">Add player</button>
         </form>
       </div>
-      <br>
-      <br>
-      <br>
-      <div>
-        <form action="/addgame" method="POST" id="addgame">
-        White
-        <select name="white-id">
-          {{#players}}
-          <option value={{_id}}>{{name}}</option>
-          {{/players}}
-          </select>
-        Black
-        <select name="black-id">
-          {{#players}}
-          <option value={{_id}}>{{name}}</option>
-          {{/players}}
-          </select>
+    </div>
 
-        <select name="result">
-          <option value=1>White won</option>
-          <option value=0>Draw</option>
-          <option value=-1>Black won</option>
-          </select>
-        <button type="submit">Add game</button>
-        </form>
-      </div>
-
-      <ul>
-        {{#games}}
+    <h1 class="header green-text">Games</h1>
+    <div class="row">
+      <div class="col s12 m6">
+        <ul>
+          {{#games}}
           <li>{{white}} vs {{black}} -- {{result}}</li>
-        {{/games}}
-      </ul>
+          {{/games}}
+        </ul>
+      </div>
+      <div class="col s12 m6">
+        <h5 class="header light">Add game</h5>
+        <form action="/addgame" method="POST" id="addgame">
+          White
+          <select name="white-id">
+            {{#players}}
+            <option value={{_id}}>{{name}}</option>
+            {{/players}}
+          </select>
+          Black
+          <select name="black-id">
+            {{#players}}
+            <option value={{_id}}>{{name}}</option>
+            {{/players}}
+          </select>
 
+          <select name="result">
+            <option value=1>White won</option>
+            <option value=0>Draw</option>
+            <option value=-1>Black won</option>
+          </select>
+          <button type="submit">Add game</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 
-    <script>
-      $("form#addplayer").on("submit", function(e) {
-      e.preventDefault();
-      $.ajax({
+<script>
+  $("form#addplayer").on("submit", function(e) {
+    e.preventDefault();
+    $.ajax({
       type: "POST",
-        url: "/addplayer",
-        data: $("form#addplayer").serialize(),
-        success: function(data) {
-          location.href = "/";
-        },
-        error: function() {
-        },
-        statusCode: {
-          406: function(msg) {
-            msg = JSON.parse(msg.responseJSON.error);
-          }
+      url: "/addplayer",
+      data: $("form#addplayer").serialize(),
+      success: function(data) {
+        location.href = "/";
+      },
+      error: function() {
+      },
+      statusCode: {
+        406: function(msg) {
+          msg = JSON.parse(msg.responseJSON.error);
         }
-      });
+      }
     });
+  });
 
-      $("form#addgame").on("submit", function(e) {
-      e.preventDefault();
-      $.ajax({
+  $("form#addgame").on("submit", function(e) {
+    e.preventDefault();
+    $.ajax({
       type: "POST",
-        url: "/addgame",
-        data: $("form#addgame").serialize(),
-        success: function(data) {
-          location.href = "/";
-        },
-        error: function() {
-        },
-        statusCode: {
-          406: function(msg) {
-            msg = JSON.parse(msg.responseJSON.error);
-          }
+      url: "/addgame",
+      data: $("form#addgame").serialize(),
+      success: function(data) {
+        location.href = "/";
+      },
+      error: function() {
+      },
+      statusCode: {
+        406: function(msg) {
+          msg = JSON.parse(msg.responseJSON.error);
         }
-      });
+      }
     });
-  </script>
-  </body>
+  });
+</script>
+</body>
 </html>

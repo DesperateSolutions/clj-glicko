@@ -56,34 +56,48 @@
       </div>
       <div class="col s12 m6">
         <h5 class="header light">Add game</h5>
-        <form action="/addgame" method="POST" id="addgame">
-          White
-          <select name="white-id">
-            {{#players}}
-            <option value={{_id}}>{{name}}</option>
-            {{/players}}
-          </select>
-          Black
-          <select name="black-id">
-            {{#players}}
-            <option value={{_id}}>{{name}}</option>
-            {{/players}}
-          </select>
 
-          <select name="result">
-            <option value=1>White won</option>
-            <option value=0>Draw</option>
-            <option value=-1>Black won</option>
-          </select>
-          <button type="submit">Add game</button>
+        <form class="col s12" action="/addgame" method="post" id="addgame">
+
+          <div class="input-field col s6">
+            White
+            <select name="white-id">
+              <option value="" disabled selected>Choose your option</option>
+              {{#players}}
+              <option value={{_id}}>{{name}}</option>
+              {{/players}}
+            </select>
+          </div>
+
+          <div class="input-field col s6">
+            Black
+            <select name="black-id">
+              <option value="" disabled selected>Choose your option</option>
+              {{#players}}
+              <option value={{_id}}>{{name}}</option>
+              {{/players}}
+            </select>
+          </div>
+
+          <div class="input-field col s6">
+            Result
+            <select name="result">
+              <option value="" disabled selected>Choose your option</option>
+              <option value=1>White won</option>
+              <option value=0>Draw</option>
+              <option value=-1>Black won</option>
+            </select>
+          </div>
+
+          <div class="col s6">
+            <button type="submit">Add game</button>
+          </div>
+
         </form>
+
       </div>
     </div>
   </div>
 </div>
-
-<script>
-
-</script>
 </body>
 </html>

@@ -1,3 +1,8 @@
+// Enable the Materilize Select
+$(document).ready(function() {
+    $('select').material_select();
+});
+
 $("form#addplayer").on("submit", function(e) {
     e.preventDefault();
     $.ajax({

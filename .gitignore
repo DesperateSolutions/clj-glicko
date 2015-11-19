@@ -11,3 +11,5 @@ pom.xml.asc
 *~
 *.txt
 *_back.clj
+
+resources/public/bower_components/

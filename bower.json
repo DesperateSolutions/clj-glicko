@@ -1,0 +1,16 @@
+{
+  "name": "chess-rating",
+  "version": "0.0.0",
+  "homepage": "https://github.com/Molyna/chess-rating",
+  "authors": [
+    "quist", "molyna"
+  ],
+  "description": "",
+  "main": "",
+  "moduleType": [],
+  "license": "MIT",
+  "dependencies": {
+    "Materialize": "materialize#~0.97.3",
+    "jquery": "~2.1.4"
+  }
+}

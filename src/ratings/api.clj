@@ -8,7 +8,7 @@
             [ring.middleware.defaults :refer [wrap-defaults api-defaults]]))
 
 (defroutes ratings-routes
-  (route/resources "public")  
+  (route/resources "/")
   (GET "/" {session :session
                    headers :headers
                    params  :query-params}

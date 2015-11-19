@@ -6,7 +6,7 @@ The goal of project is to make a suitable clojure application that can keep trac
 
 The project uses leinigen and mongo to run. 
 
-### Frontend dependencies
+## Frontend dependencies
 
 Install frontend dependencies with:
 ```
@@ -22,3 +22,8 @@ lein ring server-headless
 ```
 
 Will start the server
+
+## TODO
+
+Improve to have different games in regards to time limits.
+Make a single runable script so you can do both frot and backend 

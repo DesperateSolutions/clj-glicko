@@ -28,11 +28,22 @@
     <div class="row">
       <div class="col s12 m8">
         <h5 class="header light">League rating</h5>
-        <ul>
-          {{#players}}
-          <li>{{name}} - {{rating}}</li>
-          {{/players}}
-        </ul>
+        <table class="striped">
+          <thead>
+          <tr>
+            <th>Name</th>
+            <th>Rating</th>
+          </tr>
+          </thead>
+          <tbody>
+              {{#players}}
+              <tr>
+                <td>{{name}}</td>
+                <td>{{rating}}</td>
+              {{/players}}
+          </tr>
+          </tbody>
+        </table>
       </div>
       <div class="col s12 m4">
         <h5 class="header light">Add players</h5>

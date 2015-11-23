@@ -84,3 +84,10 @@
 
 (defn add-new-player [name] 
   (mc/insert (get-db) "players" (assoc nil :_id (ObjectId.) :name name :rating 1200 :rating-rd 350)))
+
+
+(defn delete-game [id]
+  (mc/remove-by-id (get-db) "games" (ObjectId. id)))
+
+(defn delete-player [id]
+  (mc/remove-by-id (get-db) "players" (ObjectId. id)))

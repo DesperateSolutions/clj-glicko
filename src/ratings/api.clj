@@ -65,6 +65,56 @@
              {:status 500
               :headers {"Content-Type" "application/json"}
               :body (json/write-str {:error (str "An unexpected error occurred! ")})})))
+  (DELETE "/delete-player" {{:strs [_id] :as params} :form-params session :seesion headers :headers}
+          (try
+            (str (glicko/delete-player _id))
+            (redirect (get headers "referer"))
+            (catch com.fasterxml.jackson.core.JsonParseException e
+              (.printStackTrace e)
+              {:status 406
+               :headers {"Content-Type" "application/json"}
+               :body (json/write-str {:error (str "Unable JSON.")})})
+            (catch IllegalArgumentException e
+              (.printStackTrace e)
+              {:status 406
+               :headers {"Content-Type" "application/json"}
+               :body (json/write-str {:error (.getMessage e)})})
+            (catch clojure.lang.ExceptionInfo e
+              (.printStackTrace e)
+              {:status 406
+               :headers {"Content-Type" "application/json"}
+               :body (json/write-str {:error (-> e ex-data :causes)})})
+           (catch Exception e
+             (.printStackTrace e)
+             {:status 500
+              :headers {"Content-Type" "application/json"}
+              :body (json/write-str {:error (str "An unexpected error occurred! ")})})))          
+  (DELETE "/delete-player" {{:strs [_id] :as params} :form-params session :seesion headers :headers}
+          (try
+            (str (glicko/delete-game _id))
+            (redirect (get headers "referer"))
+            (catch com.fasterxml.jackson.core.JsonParseException e
+              (.printStackTrace e)
+              {:status 406
+               :headers {"Content-Type" "application/json"}
+               :body (json/write-str {:error (str "Unable JSON.")})})
+            (catch IllegalArgumentException e
+              (.printStackTrace e)
+              {:status 406
+               :headers {"Content-Type" "application/json"}
+               :body (json/write-str {:error (.getMessage e)})})
+            (catch clojure.lang.ExceptionInfo e
+              (.printStackTrace e)
+              {:status 406
+               :headers {"Content-Type" "application/json"}
+               :body (json/write-str {:error (-> e ex-data :causes)})})
+            (catch Exception e
+              (.printStackTrace e)
+              {:status 500
+               :headers {"Content-Type" "application/json"}
+               :body (json/write-str {:error (str "An unexpected error occurred! ")})})))          
+  
+  
   
   (route/not-found "<h1>Page not found</h1>"))
 

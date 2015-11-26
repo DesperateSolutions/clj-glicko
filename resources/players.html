@@ -7,6 +7,7 @@
   <title>IFI Glicko</title>
 
   <link type="text/css" rel="stylesheet" href="bower_components/Materialize/dist/css/materialize.css"  media="screen,projection"/>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
   <script type="text/javascript" src="bower_components/jquery/dist/jquery.js"></script>
   <script type="text/javascript" src="bower_components/Materialize/dist/js/materialize.js"></script>
@@ -36,11 +37,12 @@
           </tr>
           </thead>
           <tbody>
-              {{#players}}
-              <tr>
-                <td>{{name}}</td>
-                <td>{{rating}}</td>
-              {{/players}}
+          {{#players}}
+          <tr>
+            <td>{{name}}</td>
+            <td>{{rating}}</td>
+            <td><a href="#!" class="secondary-content"><i class="material-icons">delete</i></a></td>
+            {{/players}}
           </tr>
           </tbody>
         </table>

@@ -13,7 +13,7 @@
             headers :headers
             params  :query-params}
        {:status 200
-        :body (tpl/render-resource "players.html" (glicko/get-data))
+        :body (tpl/render-resource "index.html" (glicko/get-data))
         :headers {"Content-Type" "text/html"}})
 
   (GET "/players" {session :session

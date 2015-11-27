@@ -3,14 +3,14 @@
   "version": "0.0.0",
   "homepage": "https://github.com/Molyna/chess-rating",
   "authors": [
-    "quist", "molyna"
+    "quist",
+    "molyna"
   ],
   "description": "",
   "main": "",
   "moduleType": [],
   "license": "MIT",
   "dependencies": {
-    "Materialize": "materialize#~0.97.3",
-    "jquery": "~2.1.4"
+    "Materialize": "materialize#~0.97.3"
   }
 }

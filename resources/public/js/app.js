@@ -1,27 +1,43 @@
 var React = require('react');
 var ReactDOM = require('react-dom');
 var PlayerStore = require('./stores/PlayerStore');
-
+var PlayerActions = require('./actions/PlayerActions');
 var PlayerList = require('./playerList');
 
 function getLeagueState() {
-    return {leagueTable : PlayerStore.getAll()};
+    return {players : PlayerStore.getAll().list};
 }
 
 var App = React.createClass({
 
-    getInitialState: function() {
+    getInitialState: function () {
         console.log(getLeagueState());
         return getLeagueState();
     },
 
-    render: function() {
+    componentDidMount: function () {
+        PlayerStore.addChangeListener(this._onChange);
+    },
+
+    componentWillMount: function() {
+        PlayerActions.getAll();
+    },
+
+    componentWillUnmount: function () {
+        PlayerStore.removeChangeListener(this._onChange);
+    },
+
+    render: function () {
+
         return (
-            <div className="app">
-                Hello, world! I am the app.
-                <PlayerList/>
+            <div>
+                <PlayerList players={this.state.players}/>
             </div>
         );
+    },
+
+    _onChange: function() {
+        this.setState(getLeagueState());
     }
 
 });

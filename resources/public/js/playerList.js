@@ -2,10 +2,15 @@ var React = require('react');
 
 var PlayerList = React.createClass({
     render: function() {
+        var playerNodes = this.props.players.map(function(player) {
+            return (
+                <Player player={player} key={player.name}/>
+            )
+        });
+
         return (
-            <div className="commentList">
+            <div>
                 <h1 className="header green-text">Liga</h1>
-                Hello, world! I am a CommentList.
                 <table className="striped">
                     <thead>
                     <tr>
@@ -14,8 +19,7 @@ var PlayerList = React.createClass({
                     </tr>
                     </thead>
                     <tbody>
-                        <Player/>
-                        <Player/>
+                        {playerNodes}
                     </tbody>
                 </table>
             </div>
@@ -27,11 +31,11 @@ var Player = React.createClass({
     render: function() {
         return (
             <tr>
-                <th>{this.props.name}</th>
-                <th>{this.props.rating}</th>
+                <th>{this.props.player.name}</th>
+                <th>{this.props.player.rating}</th>
             </tr>
         );
     }
 });
 
-module.exports = PlayerList
+module.exports = PlayerList;

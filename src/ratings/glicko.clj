@@ -108,7 +108,10 @@
 (defn delete-game [id]
   (let [game (mc/find-map-by-id (get-db) "games" (ObjectId. id))]
     (if (= game (get-latest-game-between-players (:white game) (:black game) (mc/find-maps (get-db) "games") nil))
-      (mc/remove-by-id (get-db) "games" (ObjectId. id))
+      (do
+        (update-player (assoc (get-player-from-id (:white game)) :rating (:white-old-rating game) :rating-rd (:white-old-rd game)))
+        (update-player (assoc (get-player-from-id (:black game)) :rating (:black-old-rating game) :rating-rd (:black-old-rd game)))
+        (mc/remove-by-id (get-db) "games" (ObjectId. id)))
       (throw (IllegalArgumentException. "To old")))))
 
 ;;Deleting players will not change any ratings

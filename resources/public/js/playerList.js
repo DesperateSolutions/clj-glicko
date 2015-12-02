@@ -34,4 +34,4 @@ var Player = React.createClass({
     }
 });
 
-module.exports = PlayerList;var React = require('react');
+module.exports = PlayerList

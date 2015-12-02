@@ -5,7 +5,7 @@ var assign = require('object-assign');
 
 var CHANGE_EVENT = 'change';
 
-var _players = {list :[{name: "John"}]};
+var _players = {list :[{name: "John", rating: 1337}]};
 
 
 var PlayerStore = assign({}, EventEmitter.prototype, {
@@ -13,7 +13,6 @@ var PlayerStore = assign({}, EventEmitter.prototype, {
     getAll: function() {
         return _players;
     },
-
 
     emitChange: function() {
         this.emit(CHANGE_EVENT);

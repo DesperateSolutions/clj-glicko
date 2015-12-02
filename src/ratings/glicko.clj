@@ -1,6 +1,8 @@
 (ns ratings.glicko
   (:require [monger.core :as mg]
-            [monger.collection :as mc])
+            [monger.collection :as mc]
+            [clj-time.core :as t]
+            [clj-time.coerce :as c])
   (:import [org.bson.types ObjectId]))
 
 ;;We also want to just calculate it all in the main functions and send on - This is a lot of double shit
@@ -44,9 +46,7 @@
   (mc/find-maps (get-db) "players"))
 
 (defn get-games []
-  (let [db (get-db)
-        games (mc/find-maps db "games")]
-    (println games)
+  (let [db (get-db)]
     (doall (map (fn [{white :white black :black result :result}]
                   (let [white-name (:name (mc/find-map-by-id db "players" (ObjectId. white)))
                         black-name (:name (mc/find-map-by-id db "players" (ObjectId. black)))
@@ -57,7 +57,7 @@
                                             :else
                                             "Drawn!")]
                     (assoc nil :white white-name :black black-name :result result-string)))
-                games))))
+                (mc/find-maps db "games")))))
 
 (defn get-data []
   (assoc nil :players (get-players) :games (get-games)))
@@ -65,13 +65,22 @@
 (defn get-player-from-id [id]
   (mc/find-map-by-id (get-db) "players" (ObjectId. id)))
 
-(defn add-game [white black result]
-  (mc/insert (get-db) "games" (assoc nil :_id (ObjectId.) :white white :black black :result result)))
+(defn add-game [{rating1 :rating rd1 :rating-rd id1 :_id} {rating2 :rating rd2 :rating-rd id2 :_id} result]
+  (mc/insert (get-db) "games" (assoc nil 
+                                :_id (ObjectId.) 
+                                :white (str id1)
+                                :black (str id2) 
+                                :result result 
+                                :white-old-rating rating1 
+                                :white-old-rd rd1
+                                :black-old-rating rating2
+                                :black-old-rd rd2
+                                :added (c/to-string (t/now)))))
 
 (defn score-game [white-id black-id result]
   (let [player1 (get-player-from-id white-id)
         player2 (get-player-from-id black-id)]
-    (add-game white-id black-id result)
+    (add-game player1 player2 result)
     (cond (= 1 result)
           (do (update-rating player1 player2 1)
               (update-rating player2 player1 0))
@@ -86,8 +95,22 @@
   (mc/insert (get-db) "players" (assoc nil :_id (ObjectId.) :name name :rating 1200 :rating-rd 350)))
 
 
-(defn delete-game [id]
-  (mc/remove-by-id (get-db) "games" (ObjectId. id)))
+(defn get-latest-game-between-players [white black games latest]
+  (if (first games) 
+    (if (and (= white (:white (first games))) (= black (:black (first games))))
+      (if (or (not latest) (t/after? (c/from-string (:added (first games))) (c/from-string (:added latest))))
+        (get-latest-game-between-players white black (rest games) (first games))
+        (get-latest-game-between-players white black (rest games) latest))
+      (get-latest-game-between-players white black (rest games) latest))
+    latest))
 
+;;Delete game will only allow deletion of the latest game played by both players
+(defn delete-game [id]
+  (let [game (mc/find-map-by-id (get-db) "games" (ObjectId. id))]
+    (if (= game (get-latest-game-between-players (:white game) (:black game) (mc/find-maps (get-db) "games") nil))
+      (mc/remove-by-id (get-db) "games" (ObjectId. id))
+      (throw (IllegalArgumentException. "To old")))))
+
+;;Deleting players will not change any ratings
 (defn delete-player [id]
   (mc/remove-by-id (get-db) "players" (ObjectId. id)))

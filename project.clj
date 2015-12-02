@@ -14,6 +14,7 @@
                  [compojure "1.4.0"]
                  [org.clojure/data.json "0.2.5"]
                  [de.ubercode.clostache/clostache "1.4.0"]
-                 [http-kit "2.1.19"]]
+                 [http-kit "2.1.19"]
+                 [clj-time "0.11.0"]]
   :plugins [[lein-ring "0.9.7"]]
   :ring {:handler ratings.api/app})

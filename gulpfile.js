@@ -10,7 +10,7 @@ function buildScript(file, watch) {
         entries: [file],
         transform: [reactify],
         debug: true,
-        fullPaths: true // Requirement of watchify
+        fullPaths: true
     }));
 
     function rebundle() {

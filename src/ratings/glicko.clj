@@ -4,6 +4,7 @@
             [clj-time.core :as t]
             [clj-time.coerce :as c]
             [clojure.tools.logging :as log])
+            [monger.json :refer :all])
   (:import [org.bson.types ObjectId]))
 
 ;;We also want to just calculate it all in the main functions and send on - This is a lot of double shit
@@ -43,9 +44,9 @@
 
 (defn- get-db []
   (let [uri (get-mongo-uri)
-        stuff (log/info uri) 
+        stuff (log/info (format "mongo-uri: %s" uri))
         {db :db} (mg/connect-via-uri uri)]
-    db))
+    db)
 
 (defn- update-player [player] 
   (let [db (get-db)]
@@ -65,7 +66,7 @@
 
 (defn get-games []
   (let [db (get-db)]
-    (doall (map (fn [{white :white black :black result :result}]
+    (doall (map (fn [{white :white black :black result :result id :_id}]
                   (let [white-name (:name (mc/find-map-by-id db "players" (ObjectId. white)))
                         black-name (:name (mc/find-map-by-id db "players" (ObjectId. black)))
                         result-string (cond (= result 1) 
@@ -74,7 +75,7 @@
                                             (str black-name " won!")
                                             :else
                                             "Drawn!")]
-                    (assoc nil :white white-name :black black-name :result result-string)))
+                    (assoc nil :white white-name :black black-name :result result-string :_id id)))
                 (mc/find-maps db "games")))))
 
 (defn get-data []

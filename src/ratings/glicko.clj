@@ -2,7 +2,8 @@
   (:require [monger.core :as mg]
             [monger.collection :as mc]
             [clj-time.core :as t]
-            [clj-time.coerce :as c])
+            [clj-time.coerce :as c]
+            [clojure.tools.logging :as log])
   (:import [org.bson.types ObjectId]))
 
 ;;We also want to just calculate it all in the main functions and send on - This is a lot of double shit
@@ -26,8 +27,25 @@
 (defn- new-rd [rd d]
   (Math/sqrt (Math/pow (+ (/ 1 (Math/pow rd 2)) (/ 1 d)) -1)))
 
+(defn- get-mongo-uri []
+  (let [u (System/getenv "MONGODB_USER")
+        p (System/getenv "MONGODB_PASS")
+        addr (System/getenv "MONGODB_PORT_27017_TCP_ADDR")
+        port (System/getenv "MONGODB_PORT_27017_TCP_PORT")
+        db (System/getenv "MONGODB_DB")
+        uri (cond (and u p addr port db) (format "mongodb://%s:%s@%s:%s/%s" u p addr port db)
+                  (and u p addr db) (format "mongodb://%s:%s@%s/%s" u p addr db)
+                  (and addr port db) (format "mongodb://%s:%s/%s" addr port db)
+                  (and addr db) (format "mongodb://%s/%s" addr db)
+                  db (format "mongodb://127.0.0.1/%s" db)
+                  :else "mongodb://127.0.0.1")]
+    uri))
+
 (defn- get-db []
-  (mg/get-db (mg/connect) "chess"))
+  (let [uri (get-mongo-uri)
+        stuff (log/info uri) 
+        {db :db} (mg/connect-via-uri uri)]
+    db))
 
 (defn- update-player [player] 
   (let [db (get-db)]

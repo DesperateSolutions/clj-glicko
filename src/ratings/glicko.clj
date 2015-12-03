@@ -28,7 +28,10 @@
   (Math/sqrt (Math/pow (+ (/ 1 (Math/pow rd 2)) (/ 1 d)) -1)))
 
 (defn- get-db []
-  (mg/get-db (mg/connect) "chess"))
+  (let [uri (or (System/getenv "MONGOLAB_URI")
+                "mongodb://127.0.0.1/chess")
+        {db :db} (mg/connect-via-uri uri)]
+    db))
 
 (defn- update-player [player] 
   (let [db (get-db)]

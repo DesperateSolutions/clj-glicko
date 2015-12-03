@@ -21,8 +21,13 @@
                    params :query-params}
        {:status 200
         :body (json/generate-string (glicko/get-players))
-        :headers {"Content-Type" "application/json"}}
-                )
+        :headers {"Content-Type" "application/json"}})
+  (GET "/games" {session :session
+                   headers :headers
+                   params :query-params}
+       {:status 200
+        :body (json/generate-string (glicko/get-games))
+        :headers {"Content-Type" "application/json"}})
   (POST "/addgame" {{:strs [white-id black-id result] :as params} :form-params session :session headers :headers}
          (try
            (str (glicko/score-game white-id black-id (Integer. result)))

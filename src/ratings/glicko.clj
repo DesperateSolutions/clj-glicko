@@ -3,7 +3,7 @@
             [monger.collection :as mc]
             [clj-time.core :as t]
             [clj-time.coerce :as c]
-            [clojure.tools.logging :as log])
+            [clojure.tools.logging :as log]
             [monger.json :refer :all])
   (:import [org.bson.types ObjectId]))
 
@@ -46,7 +46,7 @@
   (let [uri (get-mongo-uri)
         stuff (log/info (format "mongo-uri: %s" uri))
         {db :db} (mg/connect-via-uri uri)]
-    db)
+    db))
 
 (defn- update-player [player] 
   (let [db (get-db)]

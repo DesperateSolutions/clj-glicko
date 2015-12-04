@@ -28,27 +28,21 @@
 (defn- new-rd [rd d]
   (Math/sqrt (Math/pow (+ (/ 1 (Math/pow rd 2)) (/ 1 d)) -1)))
 
-(defn- get-mongo-uri []
-  (let [u (System/getenv "MONGODB_USER")
-        p (System/getenv "MONGODB_PASS")
-        addr (System/getenv "MONGODB_PORT_27017_TCP_ADDR")
-        port (System/getenv "MONGODB_PORT_27017_TCP_PORT")
-        db (System/getenv "MONGODB_DB")
-        uri (cond (and u p addr port db) (format "mongodb://%s:%s@%s:%s/%s" u p addr port db)
-                  (and u p addr db) (format "mongodb://%s:%s@%s/%s" u p addr db)
-                  (and addr port db) (format "mongodb://%s:%s/%s" addr port db)
-                  (and addr db) (format "mongodb://%s/%s" addr db)
-                  db (format "mongodb://127.0.0.1/%s" db)
-                  :else "mongodb://127.0.0.1")]
-    uri))
+(defn- get-mongo-uri [{:keys [db addr port user pass]}]
+  (if (and user pass)
+    (format "mongodb://%s:%s@%s:%s/%s" user pass addr port db)
+    (format "mongodb://%s:%s/%s" addr port db)))
 
-(defn- get-db []
-  (let [uri (get-mongo-uri)
-        stuff (log/info (format "mongo-uri: %s" uri))
-        {db :db} (mg/connect-via-uri uri)]
-    db))
+(defn get-db []
+  (let [uri (get-mongo-uri {:db (or (System/getenv "MONGODB_DB") "chess")
+                            :addr (or (System/getenv "MONGODB_PORT_27017_TCP_ADDR") "127.0.0.1")
+                            :port (or (System/getenv "MONGODB_PORT_27017_TCP_PORT") "27017")
+                            :user (System/getenv "MONGODB_USER")
+                            :pass (System/getenv "MONGODB_PASS")})]
+    (log/info (format "mongo-uri: %s" uri))
+    (:db (mg/connect-via-uri uri))))
 
-(defn- update-player [player] 
+(defn- update-player [player]
   (let [db (get-db)]
     (mc/update db "players" {:_id (:_id player)} player {:upsert true})))
 
@@ -67,15 +61,15 @@
 (defn get-games []
   (let [db (get-db)]
     (doall (map (fn [{white :white black :black result :result id :_id}]
-                  (let [white-name (:name (mc/find-map-by-id db "players" (ObjectId. white)))
-                        black-name (:name (mc/find-map-by-id db "players" (ObjectId. black)))
-                        result-string (cond (= result 1) 
-                                            (str white-name " won!")
-                                            (= result -1)
-                                            (str black-name " won!")
-                                            :else
-                                            "Drawn!")]
-                    (assoc nil :white white-name :black black-name :result result-string :_id id)))
+                    (let [white-name (:name (mc/find-map-by-id db "players" (ObjectId. white)))
+                          black-name (:name (mc/find-map-by-id db "players" (ObjectId. black)))
+                          result-string (cond (= result 1)
+                                              (str white-name " won!")
+                                              (= result -1)
+                                              (str black-name " won!")
+                                              :else
+                                              "Drawn!")]
+                      (assoc nil :white white-name :black black-name :result result-string :_id id)))
                 (mc/find-maps db "games")))))
 
 (defn get-data []
@@ -85,16 +79,16 @@
   (mc/find-map-by-id (get-db) "players" (ObjectId. id)))
 
 (defn add-game [{rating1 :rating rd1 :rating-rd id1 :_id} {rating2 :rating rd2 :rating-rd id2 :_id} result]
-  (mc/insert (get-db) "games" (assoc nil 
-                                :_id (ObjectId.) 
-                                :white (str id1)
-                                :black (str id2) 
-                                :result result 
-                                :white-old-rating rating1 
-                                :white-old-rd rd1
-                                :black-old-rating rating2
-                                :black-old-rd rd2
-                                :added (c/to-string (t/now)))))
+  (mc/insert (get-db) "games" (assoc nil
+                                     :_id (ObjectId.)
+                                     :white (str id1)
+                                     :black (str id2)
+                                     :result result
+                                     :white-old-rating rating1
+                                     :white-old-rd rd1
+                                     :black-old-rating rating2
+                                     :black-old-rd rd2
+                                     :added (c/to-string (t/now)))))
 
 (defn score-game [white-id black-id result]
   (let [player1 (get-player-from-id white-id)
@@ -110,12 +104,12 @@
           (do (update-rating player1 player2 0.5)
               (update-rating player2 player1 0.5)))))
 
-(defn add-new-player [name] 
+(defn add-new-player [name]
   (mc/insert (get-db) "players" (assoc nil :_id (ObjectId.) :name name :rating 1200 :rating-rd 350)))
 
 
 (defn get-latest-game-between-players [white black games latest]
-  (if (first games) 
+  (if (first games)
     (if (and (= white (:white (first games))) (= black (:black (first games))))
       (if (or (not latest) (t/after? (c/from-string (:added (first games))) (c/from-string (:added latest))))
         (get-latest-game-between-players white black (rest games) (first games))

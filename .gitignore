@@ -13,3 +13,5 @@ pom.xml.asc
 *_back.clj
 
 resources/public/bower_components/
+.idea
+.iml

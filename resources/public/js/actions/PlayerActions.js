@@ -8,9 +8,8 @@ var PlayerActions = {
             if(err) {
                 console.log(err);
             } else {
-                console.log(players);
                 AppDispatcher.dispatch({
-                    actionType: PlayerActions.PLAYERS_UPDATED,
+                    actionType: PlayerConstants.PLAYERS_UPDATED,
                     players: players
                 });
             }

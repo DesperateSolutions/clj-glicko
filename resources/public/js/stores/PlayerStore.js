@@ -5,7 +5,7 @@ var assign = require('object-assign');
 
 var CHANGE_EVENT = 'change';
 
-var _players = {list :[{name: "John", rating: 1337}]};
+var _players = [{name: "John", rating: 1337}];
 
 
 var PlayerStore = assign({}, EventEmitter.prototype, {
@@ -32,17 +32,11 @@ var PlayerStore = assign({}, EventEmitter.prototype, {
         this.removeListener(CHANGE_EVENT, callback);
     },
 
-    dispatcherIndex: AppDispatcher.register(function(payload) {
-        var action = payload.action;
-        var text;
-
+    dispatcherIndex: AppDispatcher.register(function(action) {
         switch(action.actionType) {
-            case PlayerConstants.PLAYER_CREATE:
-                text = action.text.trim();
-                if (text !== '') {
-                    //create(text);
-                    PlayerStore.emitChange();
-                }
+            case PlayerConstants.PLAYERS_UPDATED:
+                _players = action.players;
+                PlayerStore.emitChange();
                 break;
 
             case PlayerConstants.TODO_DESTROY:

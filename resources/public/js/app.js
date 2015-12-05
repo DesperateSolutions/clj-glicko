@@ -5,13 +5,12 @@ var PlayerActions = require('./actions/PlayerActions');
 var PlayerList = require('./playerList');
 
 function getLeagueState() {
-    return {players : PlayerStore.getAll().list};
+    return {players : PlayerStore.getAll()};
 }
 
 var App = React.createClass({
 
     getInitialState: function () {
-        console.log(getLeagueState());
         return getLeagueState();
     },
 

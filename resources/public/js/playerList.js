@@ -1,6 +1,7 @@
 var React = require('react');
 
 var PlayerList = React.createClass({
+
     render: function() {
         var playerNodes = this.props.players.map(function(player) {
             return (

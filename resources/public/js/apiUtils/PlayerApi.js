@@ -3,11 +3,11 @@ var PlayerApi = {
         var xmlHttp = new XMLHttpRequest();
         xmlHttp.onreadystatechange = function() {
             if (xmlHttp.readyState == 4 && xmlHttp.status == 200){
-                callback(null, xmlHttp.responseText);
+                callback(null, JSON.parse(xmlHttp.responseText));
             }
         };
         var asynchronous = true;
-        xmlHttp.open("GET", "/", asynchronous);
+        xmlHttp.open("GET", "/players", asynchronous);
         xmlHttp.send(null);
     }
 };

@@ -3,19 +3,31 @@
             [compojure.route :as route]
             [clostache.parser :as tpl]
             [ratings.glicko :as glicko]
-            [clojure.data.json :as json]
+            [cheshire.core :as json]
             [ring.util.response :refer [redirect]]
             [ring.middleware.defaults :refer [wrap-defaults api-defaults]]))
 
 (defroutes ratings-routes
   (route/resources "/")
   (GET "/" {session :session
-                   headers :headers
-                   params  :query-params}
+            headers :headers
+            params  :query-params}
        {:status 200
         :body (tpl/render-resource "index.html" (glicko/get-data))
         :headers {"Content-Type" "text/html"}})
 
+  (GET "/players" {session :session
+                   headers :headers
+                   params :query-params}
+       {:status 200
+        :body (json/generate-string (glicko/get-players))
+        :headers {"Content-Type" "application/json"}})
+  (GET "/games" {session :session
+                   headers :headers
+                   params :query-params}
+       {:status 200
+        :body (json/generate-string (glicko/get-games))
+        :headers {"Content-Type" "application/json"}})
   (POST "/addgame" {{:strs [white-id black-id result] :as params} :form-params session :session headers :headers}
          (try
            (str (glicko/score-game white-id black-id (Integer. result)))
@@ -24,22 +36,22 @@
              (.printStackTrace e)
              {:status 406
               :headers {"Content-Type" "application/json"}
-              :body (json/write-str {:error (str "Unable JSON.")})})
+              :body (json/generate-string {:error (str "Unable JSON.")})})
            (catch IllegalArgumentException e
              (.printStackTrace e)
              {:status 406
               :headers {"Content-Type" "application/json"}
-              :body (json/write-str {:error (.getMessage e)})})
+              :body (json/generate-string {:error (.getMessage e)})})
            (catch clojure.lang.ExceptionInfo e
              (.printStackTrace e)
              {:status 406
               :headers {"Content-Type" "application/json"}
-              :body (json/write-str {:error (-> e ex-data :causes)})})
+              :body (json/generate-string {:error (-> e ex-data :causes)})})
            (catch Exception e
              (.printStackTrace e)
              {:status 500
               :headers {"Content-Type" "application/json"}
-              :body (json/write-str {:error (str "An unexpected error occurred! ")})})))
+              :body (json/generate-string {:error (str "An unexpected error occurred! ")})})))
   
   (POST "/addplayer" {{:strs [name] :as params} :form-params session :session headers :headers}
          (try
@@ -49,22 +61,22 @@
              (.printStackTrace e)
              {:status 406
               :headers {"Content-Type" "application/json"}
-              :body (json/write-str {:error (str "Unable JSON.")})})
+              :body (json/generate-string {:error (str "Unable JSON.")})})
            (catch IllegalArgumentException e
              (.printStackTrace e)
              {:status 406
               :headers {"Content-Type" "application/json"}
-              :body (json/write-str {:error (.getMessage e)})})
+              :body (json/generate-string {:error (.getMessage e)})})
            (catch clojure.lang.ExceptionInfo e
              (.printStackTrace e)
              {:status 406
               :headers {"Content-Type" "application/json"}
-              :body (json/write-str {:error (-> e ex-data :causes)})})
+              :body (json/generate-string {:error (-> e ex-data :causes)})})
            (catch Exception e
              (.printStackTrace e)
              {:status 500
               :headers {"Content-Type" "application/json"}
-              :body (json/write-str {:error (str "An unexpected error occurred! ")})})))
+              :body (json/generate-string {:error (str "An unexpected error occurred! ")})})))
   (DELETE "/delete-player" {{:strs [_id] :as params} :form-params session :seesion headers :headers}
           (try
             (str (glicko/delete-player _id))
@@ -73,22 +85,22 @@
               (.printStackTrace e)
               {:status 406
                :headers {"Content-Type" "application/json"}
-               :body (json/write-str {:error (str "Unable JSON.")})})
+               :body (json/generate-string {:error (str "Unable JSON.")})})
             (catch IllegalArgumentException e
               (.printStackTrace e)
               {:status 406
                :headers {"Content-Type" "application/json"}
-               :body (json/write-str {:error (.getMessage e)})})
+               :body (json/generate-string {:error (.getMessage e)})})
             (catch clojure.lang.ExceptionInfo e
               (.printStackTrace e)
               {:status 406
                :headers {"Content-Type" "application/json"}
-               :body (json/write-str {:error (-> e ex-data :causes)})})
+               :body (json/generate-string {:error (-> e ex-data :causes)})})
            (catch Exception e
              (.printStackTrace e)
              {:status 500
               :headers {"Content-Type" "application/json"}
-              :body (json/write-str {:error (str "An unexpected error occurred! ")})})))          
+              :body (json/generate-string {:error (str "An unexpected error occurred! ")})})))          
   (DELETE "/delete-player" {{:strs [_id] :as params} :form-params session :seesion headers :headers}
           (try
             (str (glicko/delete-game _id))
@@ -97,22 +109,22 @@
               (.printStackTrace e)
               {:status 406
                :headers {"Content-Type" "application/json"}
-               :body (json/write-str {:error (str "Unable JSON.")})})
+               :body (json/generate-string {:error (str "Unable JSON.")})})
             (catch IllegalArgumentException e
               (.printStackTrace e)
               {:status 406
                :headers {"Content-Type" "application/json"}
-               :body (json/write-str {:error (.getMessage e)})})
+               :body (json/generate-string {:error (.getMessage e)})})
             (catch clojure.lang.ExceptionInfo e
               (.printStackTrace e)
               {:status 406
                :headers {"Content-Type" "application/json"}
-               :body (json/write-str {:error (-> e ex-data :causes)})})
+               :body (json/generate-string {:error (-> e ex-data :causes)})})
             (catch Exception e
               (.printStackTrace e)
               {:status 500
                :headers {"Content-Type" "application/json"}
-               :body (json/write-str {:error (str "An unexpected error occurred! ")})})))          
+               :body (json/generate-string {:error (str "An unexpected error occurred! ")})})))          
   
   
   

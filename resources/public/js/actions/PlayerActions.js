@@ -14,6 +14,11 @@ var PlayerActions = {
                 });
             }
         });
+    },
+
+    create: function (name) {
+        ApiUtils.create({name : name}, function (err, player) {
+        });
     }
 };
 

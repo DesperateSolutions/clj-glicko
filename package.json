@@ -17,7 +17,8 @@
     "gulp-notify": "~2.2.0",
     "object-assign": "~4.0.1",
     "keymirror": "~0.1.1",
-    "flux": "~2.1.1"
+    "flux": "~2.1.1",
+    "jquery": "~2.1.4"
   },
   "repository": {
     "type": "git",

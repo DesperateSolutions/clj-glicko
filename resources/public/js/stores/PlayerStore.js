@@ -5,7 +5,7 @@ var assign = require('object-assign');
 
 var CHANGE_EVENT = 'change';
 
-var _players = [{name: "John", rating: 1337}];
+var _players = [];
 
 
 var PlayerStore = assign({}, EventEmitter.prototype, {
@@ -18,16 +18,10 @@ var PlayerStore = assign({}, EventEmitter.prototype, {
         this.emit(CHANGE_EVENT);
     },
 
-    /**
-     * @param {function} callback
-     */
     addChangeListener: function(callback) {
         this.on(CHANGE_EVENT, callback);
     },
 
-    /**
-     * @param {function} callback
-     */
     removeChangeListener: function(callback) {
         this.removeListener(CHANGE_EVENT, callback);
     },

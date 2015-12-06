@@ -2,8 +2,8 @@ var React = require('react');
 var ReactDOM = require('react-dom');
 var PlayerStore = require('./stores/PlayerStore');
 var PlayerActions = require('./actions/PlayerActions');
-var PlayerList = require('./playerList');
-var CreatePlayer = require('./createPlayer');
+var PlayerList = require('./components/playerList');
+var CreatePlayer = require('./components/createPlayer');
 
 function getLeagueState() {
     return {players : PlayerStore.getAll()};

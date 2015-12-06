@@ -3,6 +3,7 @@ var ReactDOM = require('react-dom');
 var PlayerStore = require('./stores/PlayerStore');
 var PlayerActions = require('./actions/PlayerActions');
 var PlayerList = require('./playerList');
+var CreatePlayer = require('./createPlayer');
 
 function getLeagueState() {
     return {players : PlayerStore.getAll()};
@@ -31,6 +32,7 @@ var App = React.createClass({
         return (
             <div>
                 <PlayerList players={this.state.players}/>
+                <CreatePlayer/>
             </div>
         );
     },

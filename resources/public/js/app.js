@@ -2,7 +2,9 @@ var React = require('react');
 var ReactDOM = require('react-dom');
 
 var PlayerStore = require('./stores/PlayerStore');
+var GameStore = require('./stores/gameStore');
 var PlayerActions = require('./actions/PlayerActions');
+var GameActions = require('./actions/gameActions');
 
 var PlayerList = require('./components/playerList');
 var CreatePlayer = require('./components/createPlayer');
@@ -12,7 +14,7 @@ var AddGame = require('./components/addGame');
 function getLeagueState() {
     return {
         players : PlayerStore.getAll(),
-        games : []
+        games : GameStore.getAll()
     };
 }
 
@@ -24,14 +26,17 @@ var App = React.createClass({
 
     componentDidMount: function () {
         PlayerStore.addChangeListener(this._onChange);
+        GameStore.addChangeListener(this._onChange);
     },
 
     componentWillMount: function() {
         PlayerActions.getAll();
+        GameActions.getAll();
     },
 
     componentWillUnmount: function () {
         PlayerStore.removeChangeListener(this._onChange);
+        GameStore.removeChangeListener(this._onChange);
     },
 
     render: function () {

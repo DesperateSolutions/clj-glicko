@@ -1,6 +1,19 @@
 var $ = require('jquery');
 
 var GameApi = {
+
+    getAll: function(callback) {
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.onreadystatechange = function() {
+            if (xmlHttp.readyState == 4 && xmlHttp.status == 200){
+                callback(null, JSON.parse(xmlHttp.responseText));
+            }
+        };
+        var asynchronous = true;
+        xmlHttp.open("GET", "/games", asynchronous);
+        xmlHttp.send(null);
+    },
+
     create: function (game, callback) {
         $.ajax({
             type: "POST",

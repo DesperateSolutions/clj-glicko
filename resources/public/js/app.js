@@ -1,12 +1,19 @@
 var React = require('react');
 var ReactDOM = require('react-dom');
+
 var PlayerStore = require('./stores/PlayerStore');
 var PlayerActions = require('./actions/PlayerActions');
+
 var PlayerList = require('./components/playerList');
 var CreatePlayer = require('./components/createPlayer');
+var GameList = require('./components/gamesList');
+var AddGame = require('./components/addGame');
 
 function getLeagueState() {
-    return {players : PlayerStore.getAll()};
+    return {
+        players : PlayerStore.getAll(),
+        games : []
+    };
 }
 
 var App = React.createClass({
@@ -33,6 +40,8 @@ var App = React.createClass({
             <div>
                 <PlayerList players={this.state.players}/>
                 <CreatePlayer/>
+                <GameList games={this.state.games} />
+                <AddGame players={this.state.players}/>
             </div>
         );
     },

@@ -1,6 +1,21 @@
 var ApiUtils = require('../apiUtils/GameApi');
+var AppDispatcher = require('../dispatcher/AppDispatcher');
+var GameConstants = require('../constants/gameConstants');
 
 var GameActions = {
+
+    getAll : function() {
+        ApiUtils.getAll(function (err, games) {
+            if(err) {
+                console.log(err);
+            } else {
+                AppDispatcher.dispatch({
+                    actionType: GameConstants.GAMES_UPDATED,
+                    games: games
+                });
+            }
+        });
+    },
 
     create: function (whiteId, blackId, winner) {
         var result;

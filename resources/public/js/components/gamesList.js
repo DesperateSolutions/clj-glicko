@@ -35,7 +35,7 @@ var Game = React.createClass({
             <tr>
                 <th>{this.props.game.white}</th>
                 <th>{this.props.game.black}</th>
-                <th>{this.props.game.winner}</th>
+                <th>{this.props.game.result}</th>
             </tr>
         );
     }

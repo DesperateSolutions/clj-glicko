@@ -1,4 +1,5 @@
 var React = require('react');
+var GameActions = require('../actions/gameActions');
 
 var GamesList = React.createClass({
 
@@ -30,12 +31,18 @@ var GamesList = React.createClass({
 });
 
 var Game = React.createClass({
+
+    handleDelete : function() {
+        GameActions.deleteGame(this.props.game._id);
+    },
+
     render: function() {
         return (
             <tr>
                 <th>{this.props.game.white}</th>
                 <th>{this.props.game.black}</th>
                 <th>{this.props.game.result}</th>
+                <th><a className="secondary-content" onClick={this.handleDelete}><i className="material-icons">delete</i></a></th>
             </tr>
         );
     }

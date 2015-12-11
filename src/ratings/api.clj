@@ -101,7 +101,7 @@
              {:status 500
               :headers {"Content-Type" "application/json"}
               :body (json/generate-string {:error (str "An unexpected error occurred! ")})})))          
-  (DELETE "/delete-player" {{:strs [_id] :as params} :form-params session :seesion headers :headers}
+  (DELETE "/delete-game" {{:strs [_id] :as params} :form-params session :seesion headers :headers}
           (try
             (str (glicko/delete-game _id))
             (redirect (get headers "referer"))

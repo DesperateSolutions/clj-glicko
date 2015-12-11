@@ -31,6 +31,25 @@ var GameApi = {
                 }
             }
         });
+    },
+
+    deleteGame: function (gameId, callback) {
+        $.ajax({
+            type: "DELETE",
+            url: "/delete-game",
+            data: {_id:  gameId},
+            success: function(data) {
+                callback(null);
+            },
+            error: function(err) {
+                console.log(err);
+            },
+            statusCode: {
+                406: function(msg) {
+                    msg = JSON.parse(msg.responseJSON.error);
+                }
+            }
+        });
     }
 };
 

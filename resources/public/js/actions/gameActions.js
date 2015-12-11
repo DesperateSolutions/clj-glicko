@@ -29,6 +29,18 @@ var GameActions = {
 
         ApiUtils.create({whiteId : whiteId, blackId : blackId, result : result}, function (err, player) {
         });
+    },
+
+    deleteGame: function(gameId) {
+        ApiUtils.deleteGame(gameId, function (err) {
+            if (err) {
+                console.log(err);
+            } else {
+                AppDispatcher.dispatch({
+                    actionType: GameConstants.GAME_DELETED
+                });
+            }
+        });
     }
 };
 

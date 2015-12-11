@@ -13,7 +13,7 @@
             headers :headers
             params  :query-params}
        {:status 200
-        :body (tpl/render-resource "players.html" (glicko/get-data))
+        :body (tpl/render-resource "index.html" (glicko/get-data))
         :headers {"Content-Type" "text/html"}})
 
   (GET "/players" {session :session
@@ -28,9 +28,9 @@
        {:status 200
         :body (json/generate-string (glicko/get-games))
         :headers {"Content-Type" "application/json"}})
-  (POST "/addgame" {{:strs [white-id black-id result] :as params} :form-params session :session headers :headers}
+  (POST "/addgame" {{:strs [whiteId blackId result] :as params} :form-params session :session headers :headers}
          (try
-           (str (glicko/score-game white-id black-id (Integer. result)))
+           (str (glicko/score-game whiteId blackId (Integer. result)))
            (redirect (get headers "referer"))
            (catch com.fasterxml.jackson.core.JsonParseException e
              (.printStackTrace e)
@@ -101,7 +101,7 @@
              {:status 500
               :headers {"Content-Type" "application/json"}
               :body (json/generate-string {:error (str "An unexpected error occurred! ")})})))          
-  (DELETE "/delete-player" {{:strs [_id] :as params} :form-params session :seesion headers :headers}
+  (DELETE "/delete-game" {{:strs [_id] :as params} :form-params session :seesion headers :headers}
           (try
             (str (glicko/delete-game _id))
             (redirect (get headers "referer"))

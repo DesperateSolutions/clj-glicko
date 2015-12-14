@@ -28,36 +28,39 @@ var AddGame = React.createClass({
         });
 
         return (
-            <div>
-                <h5 className="header light">Add Game</h5>
-                <form>
-                    <div className="input-field">
-                        <select className="browser-default" defaultValue="" name="white-id" onChange={this.onWhitePlayerChange}>
-                            <option value="" disabled>Select white player</option>
-                            {playerNodes}
-                        </select>
-                        <p>
-                            <input name="resultGroup" type="radio" id="whiteRadio" value="white" onChange={this.onWinnerChange}/>
-                            <label htmlFor="whiteRadio">White</label>
-                        </p>
-                        <p>
-                            <input name="resultGroup" type="radio" id="drawRadio" value="draw" onChange={this.onWinnerChange}/>
-                            <label htmlFor="drawRadio">Draw</label>
-                        </p>
-                        <p>
-                            <input name="resultGroup" type="radio" id="blackRadio" value="black" onChange={this.onWinnerChange}/>
-                            <label htmlFor="blackRadio">Black</label>
-                        </p>
-
-                        <select className="browser-default" defaultValue="" name="white-id" onChange={this.onBlackPlayerChange}>
-                            <option value="" disabled>Select black player</option>
-                            {playerNodes}
-                        </select>
-                        <button type="button" type="button" className="btn-large waves-effect waves-light green" onClick={this.handleSubmit} >Add game</button>
+            <div className="row">
+                <div className="col s12 m6">
+                    <div className="card green darken-1 add-player-card">
+                        <div className="card-content white-text">
+                            <span className="card-title">Add Game</span>
+                        </div>
+                        <div className="card-action">
+                            <form>
+                                <div className="input-field">
+                                    <select className="browser-default" defaultValue="" name="white-id" onChange={this.onWhitePlayerChange}>
+                                        <option value="" disabled>Select white player</option>
+                                        {playerNodes}
+                                    </select>
+                                    <select className="browser-default" defaultValue="" name="white-id" onChange={this.onBlackPlayerChange}>
+                                        <option value="" disabled>Select black player</option>
+                                        {playerNodes}
+                                    </select>
+                                    <p>
+                                        <input name="resultGroup" type="radio" id="whiteRadio" value="white" onChange={this.onWinnerChange}/>
+                                        <label className="white-text" htmlFor="whiteRadio">White</label>
+                                        <input name="resultGroup" type="radio" id="drawRadio" value="draw" onChange={this.onWinnerChange}/>
+                                        <label className="white-text" htmlFor="drawRadio">Draw</label>
+                                        <input name="resultGroup" type="radio" id="blackRadio" value="black" onChange={this.onWinnerChange}/>
+                                        <label className="white-text"htmlFor="blackRadio">Black</label>
+                                        <button type="button" type="button" className="right btn-large waves-effect waves-light" onClick={this.handleSubmit} >Add game</button>
+                                    </p>
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                </form>
-
+                </div>
             </div>
+
         );
     }
 });

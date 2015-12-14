@@ -10,6 +10,7 @@ var PlayerList = require('./components/playerList');
 var CreatePlayer = require('./components/createPlayer');
 var GameList = require('./components/gamesList');
 var AddGame = require('./components/addGame');
+var Navbar = require('./components/navbar');
 
 function getLeagueState() {
     return {
@@ -43,10 +44,13 @@ var App = React.createClass({
 
         return (
             <div>
-                <PlayerList players={this.state.players}/>
-                <CreatePlayer/>
-                <GameList games={this.state.games} />
-                <AddGame players={this.state.players}/>
+                <Navbar/>
+                <div className="container">
+                    <PlayerList players={this.state.players}/>
+                    <CreatePlayer/>
+                    <GameList games={this.state.games} />
+                    <AddGame players={this.state.players}/>
+                </div>
             </div>
         );
     },

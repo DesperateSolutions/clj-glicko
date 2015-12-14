@@ -14,13 +14,26 @@ var CreatePlayer = React.createClass({
 
     render: function() {
         return (
-            <div>
-                <h5 className="header light">Add players</h5>
-                <form>
-                    <input type="text" placeholder="Player name" onChange={this.handleChange}/>
-                    <button type="button" className="btn-large waves-effect waves-light green" onClick={this.handleSubmit} >Add player</button>
-                </form>
-
+            <div className="row">
+                <div className="col s12 m6">
+                    <div className="card green darken-1">
+                        <div className="card-content white-text">
+                            <span className="card-title">Add Player</span>
+                        </div>
+                        <div className="card-action">
+                            <form>
+                                <div className="row">
+                                    <div className="col s8">
+                                        <input className="white-text" type="text" placeholder="Player name" onChange={this.handleChange}/>
+                                    </div>
+                                    <div className="col s4">
+                                        <button type="button" className="btn-large waves-effect waves-light right" onClick={this.handleSubmit} >Add</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
         );
     }

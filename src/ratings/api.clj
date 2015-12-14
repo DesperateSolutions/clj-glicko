@@ -30,7 +30,7 @@
         :headers {"Content-Type" "application/json"}})
   (POST "/addgame" {{:strs [white-id black-id result] :as params} :form-params session :session headers :headers}
          (try
-           (str (glicko/score-game white-id black-id (Integer. result)))
+           (json/generate-string (glicko/score-game white-id black-id (Integer. result)))
            (redirect (get headers "referer"))
            (catch com.fasterxml.jackson.core.JsonParseException e
              (.printStackTrace e)
@@ -55,7 +55,7 @@
   
   (POST "/addplayer" {{:strs [name] :as params} :form-params session :session headers :headers}
          (try
-           (str (glicko/add-new-player name))
+           (json/generate-string (glicko/add-new-player name))
            (redirect (get headers "referer"))
            (catch com.fasterxml.jackson.core.JsonParseException e
              (.printStackTrace e)
@@ -101,7 +101,7 @@
              {:status 500
               :headers {"Content-Type" "application/json"}
               :body (json/generate-string {:error (str "An unexpected error occurred! ")})})))          
-  (DELETE "/delete-player" {{:strs [_id] :as params} :form-params session :seesion headers :headers}
+  (DELETE "/delete-game" {{:strs [_id] :as params} :form-params session :seesion headers :headers}
           (try
             (str (glicko/delete-game _id))
             (redirect (get headers "referer"))

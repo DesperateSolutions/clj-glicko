@@ -79,21 +79,22 @@
   (mc/find-map-by-id (get-db) "players" (ObjectId. id)))
 
 (defn add-game [{rating1 :rating rd1 :rating-rd id1 :_id} {rating2 :rating rd2 :rating-rd id2 :_id} result]
-  (mc/insert (get-db) "games" (assoc nil
-                                     :_id (ObjectId.)
-                                     :white (str id1)
-                                     :black (str id2)
-                                     :result result
-                                     :white-old-rating rating1
-                                     :white-old-rd rd1
-                                     :black-old-rating rating2
-                                     :black-old-rd rd2
-                                     :added (c/to-string (t/now)))))
+  (let [game (assoc nil 
+               :_id (ObjectId.)
+               :white (str id1)
+               :black (str id2)
+               :result result
+               :white-old-rating rating1
+               :white-old-rd rd1
+               :black-old-rating rating2
+               :black-old-rd rd2
+               :added (c/to-string (t/now)))]
+    (mc/insert (get-db) "games" game)
+    game))
 
 (defn score-game [white-id black-id result]
   (let [player1 (get-player-from-id white-id)
         player2 (get-player-from-id black-id)]
-    (add-game player1 player2 result)
     (cond (= 1 result)
           (do (update-rating player1 player2 1)
               (update-rating player2 player1 0))
@@ -102,10 +103,13 @@
               (update-rating player1 player2 0))
           :else
           (do (update-rating player1 player2 0.5)
-              (update-rating player2 player1 0.5)))))
+              (update-rating player2 player1 0.5)))
+    (add-game player1 player2 result)))
 
 (defn add-new-player [name]
-  (mc/insert (get-db) "players" (assoc nil :_id (ObjectId.) :name name :rating 1200 :rating-rd 350)))
+  (let [player (assoc nil :_id (ObjectId.) :name name :rating 1200 :rating-rd 350)]
+    (mc/insert (get-db) "players" player)
+    player))
 
 
 (defn get-latest-game-between-players [white black games latest]

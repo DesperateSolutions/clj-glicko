@@ -28,9 +28,9 @@
        {:status 200
         :body (json/generate-string (glicko/get-games))
         :headers {"Content-Type" "application/json"}})
-  (POST "/addgame" {{:strs [white-id black-id result] :as params} :form-params session :session headers :headers}
+  (POST "/addgame" {{:strs [whiteId blackId result] :as params} :form-params session :session headers :headers}
          (try
-           (json/generate-string (glicko/score-game white-id black-id (Integer. result)))
+           (json/generate-string (glicko/score-game whiteId blackId (Integer. result)))
            (redirect (get headers "referer"))
            (catch com.fasterxml.jackson.core.JsonParseException e
              (.printStackTrace e)

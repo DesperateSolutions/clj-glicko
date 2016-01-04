@@ -1,6 +1,6 @@
 var React = require('react');
 
-var PlayerActions = require('./../actions/PlayerActions');
+var PlayerActions = require('./../actions/playerActions');
 
 var CreatePlayer = React.createClass({
 

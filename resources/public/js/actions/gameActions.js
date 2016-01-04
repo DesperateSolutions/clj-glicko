@@ -1,5 +1,5 @@
-var ApiUtils = require('../apiUtils/GameApi');
-var AppDispatcher = require('../dispatcher/AppDispatcher');
+var ApiUtils = require('../apiUtils/gameApi');
+var AppDispatcher = require('../dispatcher/appDispatcher');
 var GameConstants = require('../constants/gameConstants');
 
 var GameActions = {
@@ -37,7 +37,8 @@ var GameActions = {
                 console.log(err);
             } else {
                 AppDispatcher.dispatch({
-                    actionType: GameConstants.GAME_DELETED
+                    actionType: GameConstants.GAME_DELETED,
+                    gameId : gameId
                 });
             }
         });

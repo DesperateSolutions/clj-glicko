@@ -1,9 +1,9 @@
 var React = require('react');
 var ReactDOM = require('react-dom');
 
-var PlayerStore = require('./stores/PlayerStore');
+var PlayerStore = require('./stores/playerStore');
 var GameStore = require('./stores/gameStore');
-var PlayerActions = require('./actions/PlayerActions');
+var PlayerActions = require('./actions/playerActions');
 var GameActions = require('./actions/gameActions');
 
 var PlayerList = require('./components/playerList');

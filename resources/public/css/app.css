@@ -5,3 +5,7 @@
 .add-player-card select {
     margin-bottom: 5px;
 }
+
+.action-link {
+    cursor: pointer;
+}

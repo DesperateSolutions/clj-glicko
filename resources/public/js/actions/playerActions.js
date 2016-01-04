@@ -1,6 +1,6 @@
-var AppDispatcher = require('../dispatcher/AppDispatcher');
-var PlayerConstants = require('../constants/PlayerConstants');
-var ApiUtils = require('../apiUtils/PlayerApi');
+var AppDispatcher = require('../dispatcher/appDispatcher');
+var PlayerConstants = require('../constants/playerConstants');
+var ApiUtils = require('../apiUtils/playerApi');
 
 var PlayerActions = {
     getAll : function() {

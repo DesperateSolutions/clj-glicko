@@ -1,4 +1,4 @@
-var AppDispatcher = require('../dispatcher/AppDispatcher');
+var AppDispatcher = require('../dispatcher/appDispatcher');
 var EventEmitter = require('events').EventEmitter;
 var GameConstants = require('../constants/gameConstants');
 var assign = require('object-assign');
@@ -12,6 +12,16 @@ var GameStore = assign({}, EventEmitter.prototype, {
 
     getAll: function() {
         return _games;
+    },
+
+    removeGame: function(gameId) {
+        for(var i = 0; i < _games.length; i++) {
+            if (_games[i]._id == gameId) {
+                _games.splice(i, 1);
+                break;
+            }
+
+        }
     },
 
     emitChange: function() {
@@ -30,6 +40,10 @@ var GameStore = assign({}, EventEmitter.prototype, {
         switch(action.actionType) {
             case GameConstants.GAMES_UPDATED:
                 _games = action.games;
+                GameStore.emitChange();
+                break;
+            case GameConstants.GAME_DELETED:
+                GameStore.removeGame(action.gameId);
                 GameStore.emitChange();
                 break;
         }

@@ -37,7 +37,8 @@ var GameActions = {
                 console.log(err);
             } else {
                 AppDispatcher.dispatch({
-                    actionType: GameConstants.GAME_DELETED
+                    actionType: GameConstants.GAME_DELETED,
+                    gameId : gameId
                 });
             }
         });

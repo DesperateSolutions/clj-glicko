@@ -14,6 +14,16 @@ var GameStore = assign({}, EventEmitter.prototype, {
         return _games;
     },
 
+    removeGame: function(gameId) {
+        for(var i = 0; i < _games.length; i++) {
+            if (_games[i]._id == gameId) {
+                _games.splice(i, 1);
+                break;
+            }
+
+        }
+    },
+
     emitChange: function() {
         this.emit(CHANGE_EVENT);
     },
@@ -30,6 +40,10 @@ var GameStore = assign({}, EventEmitter.prototype, {
         switch(action.actionType) {
             case GameConstants.GAMES_UPDATED:
                 _games = action.games;
+                GameStore.emitChange();
+                break;
+            case GameConstants.GAME_DELETED:
+                GameStore.removeGame(action.gameId);
                 GameStore.emitChange();
                 break;
         }

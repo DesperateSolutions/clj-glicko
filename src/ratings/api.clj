@@ -31,7 +31,6 @@
   (POST "/addgame" {{:strs [whiteId blackId result] :as params} :form-params session :session headers :headers}
          (try
            (json/generate-string (glicko/score-game whiteId blackId (Integer. result)))
-           (redirect (get headers "referer"))
            (catch com.fasterxml.jackson.core.JsonParseException e
              (.printStackTrace e)
              {:status 406
@@ -56,7 +55,6 @@
   (POST "/addplayer" {{:strs [name] :as params} :form-params session :session headers :headers}
          (try
            (json/generate-string (glicko/add-new-player name))
-           (redirect (get headers "referer"))
            (catch com.fasterxml.jackson.core.JsonParseException e
              (.printStackTrace e)
              {:status 406
@@ -80,7 +78,6 @@
   (DELETE "/delete-player" {{:strs [_id] :as params} :form-params session :seesion headers :headers}
           (try
             (str (glicko/delete-player _id))
-            (redirect (get headers "referer"))
             (catch com.fasterxml.jackson.core.JsonParseException e
               (.printStackTrace e)
               {:status 406
@@ -104,7 +101,6 @@
   (DELETE "/delete-game" {{:strs [_id] :as params} :form-params session :seesion headers :headers}
           (try
             (str (glicko/delete-game _id))
-            (redirect (get headers "referer"))
             (catch com.fasterxml.jackson.core.JsonParseException e
               (.printStackTrace e)
               {:status 406

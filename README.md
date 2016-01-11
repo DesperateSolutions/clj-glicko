@@ -23,7 +23,7 @@ gulp build
 To run the program you'll run it through Leinigen. To start it type 
 
 ```
-lein ring server-headless
+lein ring server
 ```
 
 Will start the server

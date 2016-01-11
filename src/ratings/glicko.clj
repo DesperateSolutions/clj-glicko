@@ -7,14 +7,30 @@
             [monger.json :refer :all])
   (:import [org.bson.types ObjectId]))
 
-;;We also want to just calculate it all in the main functions and send on - This is a lot of double shit
-(defn update-rd [{rd :rating-rd :as player}]
+
+(defn convert-rating-to-2 [rating rd]
+  (assoc nil :rating (/ (- rating 1500) 173.7178) :rd (/ rd 173.7178)))
+
+(defn update-rd [{rd :rating-rd} t]
   (if (= rd 0)
     350
-    (min 350 (Math/sqrt (+ (* rd rd) (* (* 30 30) 1))))))
+    (min 350 (Math/sqrt (+ (* rd rd) (* (* 30 30) t))))))
 
 (defn- get-q []
   0.0057565)
+
+(defn get-volatile-g [volatilty]
+  (/ 1 (Math/sqrt (+ 1 (/ (* 3 (Math/pow volatility 2)) (Math/pow Math/PI 2))))))
+
+(defn get-volatile-e [rating1 rating2 g]
+  (/ 1 (1 + (Math/exp (* (* -1 g) (-rating1 rating2)))))
+)
+
+(defn get-v [rating1 rating2 volatility]
+  (let [g (get-volatile-g volatiltiy)
+        e (get-volatile-e rating1 rating2 g)]
+    (* (Math/pow g 2) e (- 1 e))))
+
 
 (defn- get-g [rd]
   (/ 1 (Math/sqrt (+ 1 (/ (* 3 (Math/pow (get-q) 2) (Math/pow rd 2)) (Math/pow Math/PI 2))))))
@@ -107,7 +123,7 @@
     (add-game player1 player2 result)))
 
 (defn add-new-player [name]
-  (let [player (assoc nil :_id (ObjectId.) :name name :rating 1200 :rating-rd 350)]
+  (let [player (assoc nil :_id (ObjectId.) :name name :rating 1200 :rating-rd 350 :volatility 0.06)]
     (mc/insert (get-db) "players" player)
     player))
 

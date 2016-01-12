@@ -8,7 +8,6 @@ RUN ["lein", "deps"]
 
 COPY dev /usr/src/app/dev
 COPY src /usr/src/app/src
-COPY resources /usr/src/app/resources
 
 
 EXPOSE 3000

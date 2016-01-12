@@ -4,19 +4,8 @@ The goal of project is to make a suitable clojure application that can keep trac
 
 ## Requirements
 
-The project requires leinigen and mongo to run. To build the frontend you'll need node and npm as well.
+The project requires leinigen and mongo to run.
 
-## Installing frontend dependencies
-
-Install frontend dependencies with:
-```
-npm install
-```
-## Building frontend
-Build the frontend(combine all the js files into one javascript bundle):
-```
-gulp build
-```
 
 ## Running the program
 

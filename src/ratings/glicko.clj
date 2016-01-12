@@ -43,9 +43,9 @@
         (recur a c (/ fa 2) fc delta rd v r epsilon)))
     (Math/exp (/ a 2))))
 
-(defn new-volatile [delta rd volatility1 v r]
+(defn new-volatile [delta rd volatility v r]
   (let [epsilon 0.000001
-        a (Math/log (Math/pow volatility1 2))
+        a (Math/log (Math/pow volatility 2))
         b (if (> (Math/pow delta 2) (+ (Math/pow rd 2) v))
             (Math/log (- (Math/pow delta 2) (Math/pow rd 2) v))
             (get-b 1 r a delta rd v))
@@ -62,39 +62,8 @@
 (defn get-rating-marked [rating rd-marked g result e]
   (+ rating (* (Math/pow rd-marked 2) g (- result e))))
 
-(defn get-glicko2 [rating1 rating2 volatility1 volatility2 rd1 rd2 result]
-  (let [g (get-volatile-g rd2)
-        e (get-volatile-e rating1 rating2 g)
-        v (get-v e g)
-        delta (get-delta e g v result)
-        volatility-marked (new-volatile delta rd1 volatility1 v 0.5)
-        rd-starred (pre-rating-rd rd1 volatility-marked)
-        rd-marked (get-rd-marked rd-starred v)
-        rating-marked (get-rating-marked rating1 rd-marked g result e)]
-    (assoc nil :rating (+ 1500 (* 173.7178 rating-marked)) :rd (* 173.7178 rd-marked) :volatility volatility-marked)))
-
-
-;;Glicko1
-(defn update-rd [{rd :rating-rd} t]
-  (if (= rd 0)
-    350
-    (min 350 (Math/sqrt (+ (* rd rd) (* (* 30 30) t))))))
-
-(defn- get-q []
-  0.0057565)
-
-(defn- get-g [rd]
-  (/ 1 (Math/sqrt (+ 1 (/ (* 3 (Math/pow (get-q) 2) (Math/pow rd 2)) (Math/pow Math/PI 2))))))
-
-(defn- get-e [rating1 rating2 rd]
-  (/ 1 (+ 1 (Math/pow 10 (/ (* (- (get-g rd)) (- rating1 rating2)) 400)))))
-
-(defn get-d [g e]
-  (Math/pow (* (Math/pow (get-q) 2) (Math/pow g 2) e (- 1 e)) -1))
-
-(defn- new-rd [rd d]
-  (Math/sqrt (Math/pow (+ (/ 1 (Math/pow rd 2)) (/ 1 d)) -1)))
-
+(defn update-rd-no-games [{volatility :volatility rd :rating-rd :as player}]
+  (assoc player :rating-rd (pre-rating-rd rd volatility)))
 
 (defn- get-mongo-uri [{:keys [db addr port user pass]}]
   (if (and user pass)
@@ -114,14 +83,20 @@
   (let [db (get-db)]
     (mc/update db "players" {:_id (:_id player)} player {:upsert true})))
 
-(defn- update-rating [{rating1 :rating rd1 :rating-rd :as player1} {rating2 :rating rd2 :rating-rd :as player2} result]
-  (let [q (get-q)
-        g (get-g rd2)
-        e (get-e rating1 rating2 rd2)
-        d (get-d g e)
-        new-rating (+ rating1 (* (/ q (+ (/ 1 (Math/pow rd1 2)) (/ 1 d))) g (- result e)))
-        new-rd (new-rd rd1 d)]
-    (update-player (assoc player1 :rating new-rating :rating-rd new-rd))))
+(defn get-glicko2 [{rating1 :rating rd1 :rating-rd volatility :volatility :as player} {rating2 :rating rd2 :rating-rd} result]
+  (let [rating1 (convert-rating-to-glicko2 rating1)
+        rd1 (convert-rd-to-glicko2 rd1)
+        rating2 (convert-rating-to-glicko2 rating2)
+        rd2 (convert-rd-to-glicko2 rd1)
+        g (get-volatile-g rd2)
+        e (get-volatile-e rating1 rating2 g)
+        v (get-v e g)
+        delta (get-delta e g v result)
+        volatility-marked (new-volatile delta rd1 volatility v 0.5)
+        rd-starred (pre-rating-rd rd1 volatility-marked)
+        rd-marked (get-rd-marked rd-starred v)
+        rating-marked (get-rating-marked rating1 rd-marked g result e)]
+    (update-player (assoc player :rating (+ 1500 (* 173.7178 rating-marked)) :rd (* 173.7178 rd-marked) :volatility volatility-marked))))
 
 (defn get-players []
   (mc/find-maps (get-db) "players"))
@@ -146,7 +121,7 @@
 (defn get-player-from-id [id]
   (mc/find-map-by-id (get-db) "players" (ObjectId. id)))
 
-(defn add-game [{rating1 :rating rd1 :rating-rd id1 :_id} {rating2 :rating rd2 :rating-rd id2 :_id} result]
+(defn add-game [{rating1 :rating rd1 :rating-rd id1 :_id volatility1 :volatility} {rating2 :rating rd2 :rating-rd id2 :_id volatility2 :volatility} result]
   (let [game (assoc nil 
                :_id (ObjectId.)
                :white (str id1)
@@ -156,6 +131,8 @@
                :white-old-rd rd1
                :black-old-rating rating2
                :black-old-rd rd2
+               :white-old-volatility volatility1
+               :black-old-volatility volatility2
                :added (c/to-string (t/now)))]
     (mc/insert (get-db) "games" game)
     game))
@@ -164,14 +141,14 @@
   (let [player1 (get-player-from-id white-id)
         player2 (get-player-from-id black-id)]
     (cond (= 1 result)
-          (do (update-rating player1 player2 1)
-              (update-rating player2 player1 0))
+          (do (get-glicko2 player1 player2 1)
+              (get-glicko2 player2 player1 0))
           (= -1 result)
-          (do (update-rating player2 player1 1)
-              (update-rating player1 player2 0))
+          (do (get-glicko2 player2 player1 1)
+              (get-glicko2 player1 player2 0))
           :else
-          (do (update-rating player1 player2 0.5)
-              (update-rating player2 player1 0.5)))
+          (do (get-glicko2 player1 player2 0.5)
+              (get-glicko2 player2 player1 0.5)))
     (add-game player1 player2 result)))
 
 (defn add-new-player [name]

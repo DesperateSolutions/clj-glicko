@@ -7,29 +7,21 @@
             [monger.json :refer :all])
   (:import [org.bson.types ObjectId]))
 
-
+;;Glicko2
 (defn convert-rating-to-glicko2 [rating]
   (/ (- rating 1500) 173.7178))
 
 (defn convert-rd-to-glicko2 [rd]
   (/ rd 173.7178))
 
-(defn update-rd [{rd :rating-rd} t]
-  (if (= rd 0)
-    350
-    (min 350 (Math/sqrt (+ (* rd rd) (* (* 30 30) t))))))
-
-(defn- get-q []
-  0.0057565)
-
 (defn get-volatile-g [rd]
-  (/ 1 (Math/sqrt (+ 1 (/ (* 3 (Math/pow rd 2)) (Math/pow Math/PI 2))))))
+  (/ 1 (Math/sqrt (+ 1 (/ (* 3 (Math/pow rd 2)) (Math/pow (Math/PI) 2))))))
 
 (defn get-volatile-e [rating1 rating2 g]
-  (/ 1 (1 + (Math/exp (* (* -1 g) (- rating1 rating2))))))
+  (/ 1 (+ 1 (Math/exp (* (* -1 g) (- rating1 rating2))))))
 
 (defn get-v [e g]
-  (* (Math/pow g 2) e (- 1 e)))
+  (/ 1 (* (Math/pow g 2) e (- 1 e))))
 
 (defn get-delta [e g v result]
   (* v g (- result e)))
@@ -51,9 +43,9 @@
         (recur a c (/ fa 2) fc delta rd v r epsilon)))
     (Math/exp (/ a 2))))
 
-(defn new-rd [delta rd v r]
+(defn new-volatile [delta rd volatility1 v r]
   (let [epsilon 0.000001
-        a (Math/log (Math/pow rd 2))
+        a (Math/log (Math/pow volatility1 2))
         b (if (> (Math/pow delta 2) (+ (Math/pow rd 2) v))
             (Math/log (- (Math/pow delta 2) (Math/pow rd 2) v))
             (get-b 1 r a delta rd v))
@@ -70,16 +62,26 @@
 (defn get-rating-marked [rating rd-marked g result e]
   (+ rating (* (Math/pow rd-marked 2) g (- result e))))
 
-(defn get-glicko2 [rating1 rating2 volatility rd result r]
-  (let [g (get-volatile-g volatility)
+(defn get-glicko2 [rating1 rating2 volatility1 volatility2 rd1 rd2 result]
+  (let [g (get-volatile-g rd2)
         e (get-volatile-e rating1 rating2 g)
         v (get-v e g)
         delta (get-delta e g v result)
-        volatility-marked (new-rd delta rd v r)
-        rd-starred (pre-rating-rd rd volatility-marked)
+        volatility-marked (new-volatile delta rd1 volatility1 v 0.5)
+        rd-starred (pre-rating-rd rd1 volatility-marked)
         rd-marked (get-rd-marked rd-starred v)
         rating-marked (get-rating-marked rating1 rd-marked g result e)]
     (assoc nil :rating (+ 1500 (* 173.7178 rating-marked)) :rd (* 173.7178 rd-marked) :volatility volatility-marked)))
+
+
+;;Glicko1
+(defn update-rd [{rd :rating-rd} t]
+  (if (= rd 0)
+    350
+    (min 350 (Math/sqrt (+ (* rd rd) (* (* 30 30) t))))))
+
+(defn- get-q []
+  0.0057565)
 
 (defn- get-g [rd]
   (/ 1 (Math/sqrt (+ 1 (/ (* 3 (Math/pow (get-q) 2) (Math/pow rd 2)) (Math/pow Math/PI 2))))))

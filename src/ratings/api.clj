@@ -9,13 +9,6 @@
 
 (defroutes ratings-routes
   (route/resources "/")
-  (GET "/" {session :session
-            headers :headers
-            params  :query-params}
-       {:status 200
-        :body (tpl/render-resource "index.html" (glicko/get-data))
-        :headers {"Content-Type" "text/html"}})
-
   (GET "/players" {session :session
                    headers :headers
                    params :query-params}
@@ -28,7 +21,7 @@
        {:status 200
         :body (json/generate-string (glicko/get-games))
         :headers {"Content-Type" "application/json"}})
-  (POST "/addgame" {{:strs [whiteId blackId result] :as params} :form-params session :session headers :headers}
+  (POST "/games" {{:strs [whiteId blackId result] :as params} :form-params session :session headers :headers}
          (try
            (json/generate-string (glicko/score-game whiteId blackId (Integer. result)))
            (catch com.fasterxml.jackson.core.JsonParseException e
@@ -52,7 +45,7 @@
               :headers {"Content-Type" "application/json"}
               :body (json/generate-string {:error (str "An unexpected error occurred! ")})})))
   
-  (POST "/addplayer" {{:strs [name] :as params} :form-params session :session headers :headers}
+  (POST "/players" {{:strs [name] :as params} :form-params session :session headers :headers}
          (try
            (json/generate-string (glicko/add-new-player name))
            (catch com.fasterxml.jackson.core.JsonParseException e
@@ -75,7 +68,7 @@
              {:status 500
               :headers {"Content-Type" "application/json"}
               :body (json/generate-string {:error (str "An unexpected error occurred! ")})})))
-  (DELETE "/delete-player" {{:strs [_id] :as params} :form-params session :seesion headers :headers}
+  (DELETE "/player" {{:strs [_id] :as params} :form-params session :seesion headers :headers}
           (try
             (str (glicko/delete-player _id))
             (catch com.fasterxml.jackson.core.JsonParseException e
@@ -98,7 +91,7 @@
              {:status 500
               :headers {"Content-Type" "application/json"}
               :body (json/generate-string {:error (str "An unexpected error occurred! ")})})))          
-  (DELETE "/delete-game" {{:strs [_id] :as params} :form-params session :seesion headers :headers}
+  (DELETE "/game" {{:strs [_id] :as params} :form-params session :seesion headers :headers}
           (try
             (str (glicko/delete-game _id))
             (catch com.fasterxml.jackson.core.JsonParseException e

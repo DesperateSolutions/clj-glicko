@@ -16,7 +16,7 @@
                  [http-kit "2.1.19"]
                  [clj-time "0.11.0"]
                  [org.clojure/tools.logging "0.3.1"]
-                 [liberator "0.13"]
-                 [ring/ring-defaults "0.1.5"]]
+                 [ring/ring-defaults "0.1.5"]
+                 [liberator "0.13"]]
   :plugins [[lein-ring "0.9.7"]]
   :ring {:handler ratings.api/app})

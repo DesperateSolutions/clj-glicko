@@ -63,7 +63,7 @@
   (+ rating (* (Math/pow rd-marked 2) g (- result e))))
 
 (defn update-rd-no-games [{volatility :volatility rd :rating-rd :as player}]
-  (assoc player :rating-rd (pre-rating-rd rd volatility)))
+  (assoc player :rating-rd (* 173.7178 (pre-rating-rd (convert-rd-to-glicko2 rd) volatility))))
 
 (defn- get-mongo-uri [{:keys [db addr port user pass]}]
   (if (and user pass)
@@ -96,7 +96,7 @@
         rd-starred (pre-rating-rd rd1 volatility-marked)
         rd-marked (get-rd-marked rd-starred v)
         rating-marked (get-rating-marked rating1 rd-marked g result e)]
-    (update-player (assoc player :rating (+ 1500 (* 173.7178 rating-marked)) :rd (* 173.7178 rd-marked) :volatility volatility-marked))))
+    (update-player (assoc player :rating (+ 1500 (* 173.7178 rating-marked)) :rating-rd (* 173.7178 rd-marked) :volatility volatility-marked))))
 
 (defn get-players []
   (mc/find-maps (get-db) "players"))
@@ -155,7 +155,6 @@
   (let [player (assoc nil :_id (ObjectId.) :name name :rating 1200 :rating-rd 350 :volatility 0.06)]
     (mc/insert (get-db) "players" player)
     player))
-
 
 (defn get-latest-game-between-players [white black games latest]
   (if (first games)

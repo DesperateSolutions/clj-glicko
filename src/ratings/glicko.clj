@@ -8,8 +8,11 @@
   (:import [org.bson.types ObjectId]))
 
 
-(defn convert-rating-to-2 [rating rd]
-  (assoc nil :rating (/ (- rating 1500) 173.7178) :rd (/ rd 173.7178)))
+(defn convert-rating-to-glicko2 [rating]
+  (/ (- rating 1500) 173.7178))
+
+(defn convert-rd-to-glicko2 [rd]
+  (/ rd 173.7178))
 
 (defn update-rd [{rd :rating-rd} t]
   (if (= rd 0)
@@ -19,18 +22,64 @@
 (defn- get-q []
   0.0057565)
 
-(defn get-volatile-g [volatilty]
-  (/ 1 (Math/sqrt (+ 1 (/ (* 3 (Math/pow volatility 2)) (Math/pow Math/PI 2))))))
+(defn get-volatile-g [rd]
+  (/ 1 (Math/sqrt (+ 1 (/ (* 3 (Math/pow rd 2)) (Math/pow Math/PI 2))))))
 
 (defn get-volatile-e [rating1 rating2 g]
-  (/ 1 (1 + (Math/exp (* (* -1 g) (-rating1 rating2)))))
-)
+  (/ 1 (1 + (Math/exp (* (* -1 g) (- rating1 rating2))))))
 
-(defn get-v [rating1 rating2 volatility]
-  (let [g (get-volatile-g volatiltiy)
-        e (get-volatile-e rating1 rating2 g)]
-    (* (Math/pow g 2) e (- 1 e))))
+(defn get-v [e g]
+  (* (Math/pow g 2) e (- 1 e)))
 
+(defn get-delta [e g v result]
+  (* v g (- result e)))
+
+(defn get-f [x delta rd v r a]
+  (- (/ (* (Math/exp x) (- (Math/pow delta 2) (Math/pow rd 2) v (Math/exp x))) (* 2 (Math/pow (+ (Math/pow rd 2) v (Math/exp x)) 2))) (/ (- x a) (Math/pow r 2))))
+
+(defn get-b [k r a delta rd v]
+  (if (< (get-f (- a (* k r)) delta rd v r a) 0)
+    (recur (inc k) r a delta rd v)
+    (- a (* k r) delta rd v)))
+
+(defn get-ab [a b fa fb delta rd v r epsilon]
+  (if (> (Math/abs (- a b)) epsilon)
+    (let [c (+ a (/ (* (- a b) fa) (- fb fa)))
+          fc (get-f c delta rd v r a)]
+      (if (< (* fc fb) 0)        
+        (recur b c fb fc delta rd v r epsilon)
+        (recur a c (/ fa 2) fc delta rd v r epsilon)))
+    (Math/exp (/ a 2))))
+
+(defn new-rd [delta rd v r]
+  (let [epsilon 0.000001
+        a (Math/log (Math/pow rd 2))
+        b (if (> (Math/pow delta 2) (+ (Math/pow rd 2) v))
+            (Math/log (- (Math/pow delta 2) (Math/pow rd 2) v))
+            (get-b 1 r a delta rd v))
+        fa (get-f a delta rd v r a)
+        fb (get-f b delta rd v r a)]
+    (get-ab a b fa fb delta rd v r epsilon)))
+
+(defn pre-rating-rd [rd rd-marked]
+  (Math/sqrt (+ (Math/pow rd 2) (Math/pow rd-marked 2))))
+
+(defn get-rd-marked [rd-starred v]
+  (/ 1 (Math/sqrt (+ (/ 1 (Math/pow rd-starred 2)) (/ 1 v)))))
+
+(defn get-rating-marked [rating rd-marked g result e]
+  (+ rating (* (Math/pow rd-marked 2) g (- result e))))
+
+(defn get-glicko2 [rating1 rating2 volatility rd result r]
+  (let [g (get-volatile-g volatility)
+        e (get-volatile-e rating1 rating2 g)
+        v (get-v e g)
+        delta (get-delta e g v result)
+        volatility-marked (new-rd delta rd v r)
+        rd-starred (pre-rating-rd rd volatility-marked)
+        rd-marked (get-rd-marked rd-starred v)
+        rating-marked (get-rating-marked rating1 rd-marked g result e)]
+    (assoc nil :rating (+ 1500 (* 173.7178 rating-marked)) :rd (* 173.7178 rd-marked) :volatility volatility-marked)))
 
 (defn- get-g [rd]
   (/ 1 (Math/sqrt (+ 1 (/ (* 3 (Math/pow (get-q) 2) (Math/pow rd 2)) (Math/pow Math/PI 2))))))
@@ -43,6 +92,7 @@
 
 (defn- new-rd [rd d]
   (Math/sqrt (Math/pow (+ (/ 1 (Math/pow rd 2)) (/ 1 d)) -1)))
+
 
 (defn- get-mongo-uri [{:keys [db addr port user pass]}]
   (if (and user pass)

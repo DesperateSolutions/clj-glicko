@@ -2,6 +2,8 @@
 
 The goal of project is to make a suitable clojure application that can keep track of rating between people with glicko.
 
+A front end for it can be found at [rating-frontend](https://github.com/Quist/rating-frontend)
+
 ## Requirements
 
 The project requires leinigen and mongo to run.

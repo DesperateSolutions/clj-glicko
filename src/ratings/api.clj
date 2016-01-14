@@ -1,7 +1,6 @@
 (ns ratings.api
   (:require [compojure.core :refer :all]
             [compojure.route :as route]
-            [clostache.parser :as tpl]
             [ratings.glicko :as glicko]
             [cheshire.core :as json]
             [ring.util.response :refer [redirect]]
@@ -121,4 +120,6 @@
 
 
 (def app
-  (wrap-defaults ratings-routes api-defaults))
+  (-> ratings-routes
+      (wrap-cors :access-control-allow-methods [:get :put :post :delete])
+      (wrap-defaults api-defaults)))

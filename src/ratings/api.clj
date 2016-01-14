@@ -3,6 +3,7 @@
             [compojure.route :as route]
             [ratings.glicko :as glicko]
             [cheshire.core :as json]
+            [ring.middleware.cors :refer [wrap-cors]]
             [ring.util.response :refer [redirect]]
             [ring.middleware.defaults :refer [wrap-defaults api-defaults]]))
 
@@ -121,5 +122,6 @@
 
 (def app
   (-> ratings-routes
-      (wrap-cors :access-control-allow-methods [:get :put :post :delete])
-      (wrap-defaults api-defaults)))
+      (wrap-defaults api-defaults)
+      (wrap-cors :access-control-allow-origin [#".*"]
+                 :access-control-allow-methods [:get :put :post :delete])))

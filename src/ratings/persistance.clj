@@ -14,8 +14,8 @@
     (format "mongodb://%s:%s@%s:%s/%s" user pass addr port db)
     (format "mongodb://%s:%s/%s" addr port db)))
 
-(defn get-db []
-  (let [uri (get-mongo-uri {:db (or (System/getenv "MONGODB_DB") "chess")
+(defn get-db [name]
+  (let [uri (get-mongo-uri {:db (or (System/getenv "MONGODB_DB") name)
                             :addr (or (System/getenv "MONGODB_PORT_27017_TCP_ADDR") "127.0.0.1")
                             :port (or (System/getenv "MONGODB_PORT_27017_TCP_PORT") "27017")
                             :user (System/getenv "MONGODB_USER")
@@ -23,16 +23,16 @@
     (log/info (format "mongo-uri: %s" uri))
     (:db (mg/connect-via-uri uri))))
 
-(defn- update-player [player]
-  (let [db (get-db)]
+(defn- update-player [player league]
+  (let [db (get-db league)]
     (mc/update db "players" {:_id (:_id player)} player {:upsert true})))
 
 
-(defn get-players []
-  (mc/find-maps (get-db) "players"))
+(defn get-players [league]
+  (mc/find-maps (get-db league) "players"))
 
-(defn get-games []
-  (let [db (get-db)]
+(defn get-games [league]
+  (let [db (get-db league)]
     (doall (map (fn [{white :white black :black result :result id :_id}]
                     (let [white-name (:name (mc/find-map-by-id db "players" (ObjectId. white)))
                           black-name (:name (mc/find-map-by-id db "players" (ObjectId. black)))
@@ -48,10 +48,10 @@
 (defn get-data []
   (assoc nil :players (get-players) :games (get-games)))
 
-(defn get-player-from-id [id]
-  (mc/find-map-by-id (get-db) "players" (ObjectId. id)))
+(defn get-player-from-id [id league]
+  (mc/find-map-by-id (get-db league) "players" (ObjectId. id)))
 
-(defn add-game [{rating1 :rating rd1 :rating-rd id1 :_id volatility1 :volatility} {rating2 :rating rd2 :rating-rd id2 :_id volatility2 :volatility} result]
+(defn add-game [{rating1 :rating rd1 :rating-rd id1 :_id volatility1 :volatility} {rating2 :rating rd2 :rating-rd id2 :_id volatility2 :volatility} result league]
   (let [game (assoc nil 
                :_id (ObjectId.)
                :white (str id1)
@@ -64,7 +64,7 @@
                :white-old-volatility volatility1
                :black-old-volatility volatility2
                :added (c/to-string (t/now)))]
-    (mc/insert (get-db) "games" game)
+    (mc/insert (get-db league) "games" game)
     game))
 
 (defn score-game [white-id black-id result]
@@ -81,9 +81,9 @@
               (update-player (glicko/get-glicko2 player2 player1 0.5))))
     (add-game player1 player2 result)))
 
-(defn add-new-player [name]
+(defn add-new-player [name league]
   (let [player (assoc nil :_id (ObjectId.) :name name :rating 1200 :rating-rd 350 :volatility 0.06)]
-    (mc/insert (get-db) "players" player)
+    (mc/insert (get-db league) "players" player)
     player))
 
 (defn get-latest-game-between-players [white black games latest]
@@ -96,20 +96,24 @@
     latest))
 
 ;;Delete game will only allow deletion of the latest game played by both players
-(defn delete-game [id]
-  (let [game (mc/find-map-by-id (get-db) "games" (ObjectId. id))]
-    (if (= game (get-latest-game-between-players (:white game) (:black game) (mc/find-maps (get-db) "games") nil))
+(defn delete-game [id league]
+  (let [db (get-db league)
+        game (mc/find-map-by-id db "games" (ObjectId. id))]
+    (if (= game (get-latest-game-between-players (:white game) (:black game) (mc/find-maps db "games") nil))
       (do
         (update-player (assoc (get-player-from-id (:white game)) :rating (:white-old-rating game) :rating-rd (:white-old-rd game)))
         (update-player (assoc (get-player-from-id (:black game)) :rating (:black-old-rating game) :rating-rd (:black-old-rd game)))
-        (mc/remove-by-id (get-db) "games" (ObjectId. id)))
+        (mc/remove-by-id db "games" (ObjectId. id)))
       (throw (IllegalArgumentException. "To old")))))
 
 ;;Deleting players will not change any ratings
 (defn delete-player [id]
   (mc/remove-by-id (get-db) "players" (ObjectId. id)))
 
-(defn create-league [])
+(defn create-league [league-name]
+  (->> league-name 
+       (assoc nil :_id (ObjectId.) :name)
+       (mc/insert (get-db "leagues") "leagus")))
 
 (defn get-league [id]
-  (mc/find-maps (get-db) "players"))
+  (mc/find-map-by-id (get-db "leagues") "players" (ObjectId. id)))

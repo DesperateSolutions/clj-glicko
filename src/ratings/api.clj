@@ -13,7 +13,7 @@
                    headers :headers
                    params :query-params}
        {:status 200
-        :body (json/generate-string (persistance/get-players) "chess")
+        :body (json/generate-string (persistance/get-players "chess"))
         :headers {"Content-Type" "application/json"}})
   (GET "/games" {session :session
                    headers :headers

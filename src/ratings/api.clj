@@ -1,7 +1,7 @@
 (ns ratings.api
   (:require [compojure.core :refer :all]
             [compojure.route :as route]
-            [ratings.glicko :as glicko]
+            [ratings.persistance :as persistance]
             [cheshire.core :as json]
             [ring.middleware.cors :refer [wrap-cors]]
             [ring.util.response :refer [redirect]]
@@ -13,17 +13,17 @@
                    headers :headers
                    params :query-params}
        {:status 200
-        :body (json/generate-string (glicko/get-players))
+        :body (json/generate-string (persistance/get-players))
         :headers {"Content-Type" "application/json"}})
   (GET "/games" {session :session
                    headers :headers
                    params :query-params}
        {:status 200
-        :body (json/generate-string (glicko/get-games))
+        :body (json/generate-string (persistance/get-games))
         :headers {"Content-Type" "application/json"}})
   (POST "/games" {{:strs [whiteId blackId result] :as params} :form-params session :session headers :headers}
          (try
-           (json/generate-string (glicko/score-game whiteId blackId (Integer. result)))
+           (json/generate-string (persistance/score-game whiteId blackId (Integer. result)))
            (catch com.fasterxml.jackson.core.JsonParseException e
              (.printStackTrace e)
              {:status 406
@@ -47,7 +47,7 @@
   
   (POST "/players" {{:strs [name] :as params} :form-params session :session headers :headers}
          (try
-           (json/generate-string (glicko/add-new-player name))
+           (json/generate-string (persistance/add-new-player name))
            (catch com.fasterxml.jackson.core.JsonParseException e
              (.printStackTrace e)
              {:status 406
@@ -70,7 +70,7 @@
               :body (json/generate-string {:error (str "An unexpected error occurred! ")})})))
   (DELETE "/player" {{:strs [_id] :as params} :form-params session :seesion headers :headers}
           (try
-            (str (glicko/delete-player _id))
+            (str (persistance/delete-player _id))
             (catch com.fasterxml.jackson.core.JsonParseException e
               (.printStackTrace e)
               {:status 406
@@ -93,7 +93,7 @@
               :body (json/generate-string {:error (str "An unexpected error occurred! ")})})))          
   (DELETE "/game" {{:strs [_id] :as params} :form-params session :seesion headers :headers}
           (try
-            (str (glicko/delete-game _id))
+            (str (persistance/delete-game _id))
             (catch com.fasterxml.jackson.core.JsonParseException e
               (.printStackTrace e)
               {:status 406

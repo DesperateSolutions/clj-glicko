@@ -67,19 +67,19 @@
     (mc/insert (get-db league) "games" game)
     game))
 
-(defn score-game [white-id black-id result]
-  (let [player1 (get-player-from-id white-id)
-        player2 (get-player-from-id black-id)]
+(defn score-game [white-id black-id result league]
+  (let [player1 (get-player-from-id white-id league)
+        player2 (get-player-from-id black-id league)]
     (cond (= 1 result)
-          (do (update-player (glicko/get-glicko2 player1 player2 1))
-              (update-player (glicko/get-glicko2 player2 player1 0)))
+          (do (update-player (glicko/get-glicko2 player1 player2 1) league)
+              (update-player (glicko/get-glicko2 player2 player1 0) league))
           (= -1 result)
-          (do (update-player (glicko/get-glicko2 player2 player1 1))
-              (update-player (glicko/get-glicko2 player1 player2 0)))
+          (do (update-player (glicko/get-glicko2 player2 player1 1) league)
+              (update-player (glicko/get-glicko2 player1 player2 0) league))
           :else
-          (do (update-player (glicko/get-glicko2 player1 player2 0.5))
-              (update-player (glicko/get-glicko2 player2 player1 0.5))))
-    (add-game player1 player2 result)))
+          (do (update-player (glicko/get-glicko2 player1 player2 0.5) league)
+              (update-player (glicko/get-glicko2 player2 player1 0.5) league)))
+    (add-game player1 player2 result league)))
 
 (defn add-new-player [name league]
   (let [player (assoc nil :_id (ObjectId.) :name name :rating 1200 :rating-rd 350 :volatility 0.06)]
@@ -107,8 +107,8 @@
       (throw (IllegalArgumentException. "To old")))))
 
 ;;Deleting players will not change any ratings
-(defn delete-player [id]
-  (mc/remove-by-id (get-db) "players" (ObjectId. id)))
+(defn delete-player [id league]
+  (mc/remove-by-id (get-db league) "players" (ObjectId. id)))
 
 (defn create-league [league-name]
   (->> league-name 

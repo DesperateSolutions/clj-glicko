@@ -113,7 +113,7 @@
 (defn create-league [league-name]
   (->> league-name 
        (assoc nil :_id (ObjectId.) :name)
-       (mc/insert (get-db "leagues") "leagus")))
+       (mc/insert (get-db "leagues") "leagues")))
 
 (defn get-league [id]
   (mc/find-map-by-id (get-db "leagues") "players" (ObjectId. id)))

@@ -26,17 +26,17 @@
   (* v g (- result e)))
 
 ;;Step 5
-;Math.exp(x) * (Math.pow(delta, 2) - Math.pow(pl.__rd, 2) - v - Math.exp(x)) / (2*Math.pow (Math.pow(pl.__rd, 2) + v + Math.exp(x), 2)) - (x - a) / Math.pow(pl._tau, 2);
-
+;;The F(x) function we got. Set up as partial most of the time
 (defn get-f [a delta rd v tau x]
-  ;(println (str "A: " a " Delta: " delta " RD: " rd " V: " v " Tau: " tau " X: " x))
   (- (/ (* (Math/exp x) (- (Math/pow delta 2) (Math/pow rd 2) v (Math/exp x))) (* 2 (Math/pow (+ (Math/pow rd 2) v (Math/exp x)) 2))) (/ (- x a) (Math/pow tau 2))))
 
+;;Helper Function for getting B
 (defn get-b [k r a delta rd v f]
   (if (< (f (- a (* k r))) 0)
     (recur (inc k) r a delta rd v f)
     (- a (* k r) delta rd v)))
 
+;;Helper function for iterative part of Step 5
 (defn get-ab [a b fa fb delta rd v r epsilon f]
   (if (> (Math/abs (- a b)) epsilon)
     (let [c (+ a (/ (* (- a b) fa) (- fb fa)))
@@ -46,6 +46,7 @@
         (recur a c (/ fa 2) fc delta rd v r epsilon f)))
     (Math/exp (/ a 2))))
 
+;;The setup for the iterative part of Step 5
 (defn new-volatile [delta rd volatility v tau]
   (let [epsilon 0.000001
         a (Math/log (Math/pow volatility 2))

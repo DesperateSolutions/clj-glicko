@@ -110,10 +110,14 @@
 (defn delete-player [id league]
   (mc/remove-by-id (get-db league) "players" (ObjectId. id)))
 
-(defn create-league [league-name]
-  (->> league-name 
-       (assoc nil :_id (ObjectId.) :name)
-       (mc/insert (get-db "leagues") "leagues")))
+
+(defn create-league [league-name settings]
+  (let [league (assoc nil :_id (ObjectId.) :name league-name :settings settings)]
+       (mc/insert (get-db "leagues") "settings" league)
+       league))
 
 (defn get-league [id]
-  (mc/find-map-by-id (get-db "leagues") "players" (ObjectId. id)))
+  (mc/find-map-by-id (get-db "leagues") "settings" (ObjectId. id)))
+
+(defn get-leagues []
+  (mc/find-maps (get-db "leagues") "settings"))

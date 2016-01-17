@@ -1,7 +1,8 @@
 (ns user
   (:require 
    [clojure.tools.namespace.repl :refer [refresh refresh-all]]
-   [ratings.glicko :as glicko]))
+   [ratings.glicko :as glicko]
+   [ratings.persistance :as p]))
 
 (def system
   "A Var containing an object representing the application under

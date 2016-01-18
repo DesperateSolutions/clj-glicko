@@ -3,7 +3,6 @@ FROM clojure
 WORKDIR /usr/src/app/
 
 COPY project.clj /usr/src/app/
-RUN ["ls", "/usr/src/app/"]
 RUN ["lein", "deps"]
 
 COPY dev /usr/src/app/dev

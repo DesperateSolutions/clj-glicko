@@ -15,7 +15,7 @@
     (format "mongodb://%s:%s/%s" addr port db)))
 
 (defn get-db [name]
-  (let [uri (get-mongo-uri {:db (or (System/getenv "MONGODB_DB") name)
+  (let [uri (get-mongo-uri {:db name
                             :addr (or (System/getenv "MONGODB_PORT_27017_TCP_ADDR") "127.0.0.1")
                             :port (or (System/getenv "MONGODB_PORT_27017_TCP_PORT") "27017")
                             :user (System/getenv "MONGODB_USER")

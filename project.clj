@@ -8,11 +8,8 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [com.novemberain/monger "3.0.0-rc2"]
-                 [clj-http "2.0.0"]
                  [cheshire "5.5.0"]
                  [compojure "1.4.0"]
-                 [org.clojure/data.json "0.2.5"]
-                 [http-kit "2.1.19"]
                  [clj-time "0.11.0"]
                  [org.clojure/tools.logging "0.3.1"]
                  [ring/ring-defaults "0.1.5"]

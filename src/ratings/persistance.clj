@@ -25,7 +25,7 @@
 
 (defn- update-player [player league]
   (let [db (get-db league)]
-    (mc/update db "players" {:_id (:_id player)} player {:upsert true})))
+    (log/info (mc/update db "players" {:_id (:_id player)} player {:upsert true}))))
 
 
 (defn get-players [league]
@@ -64,7 +64,7 @@
                :white-old-volatility volatility1
                :black-old-volatility volatility2
                :added (c/to-string (t/now)))]
-    (mc/insert (get-db league) "games" game)
+    (log/info (mc/insert (get-db league) "games" game))
     game))
 
 (defn score-game [white-id black-id result league]
@@ -83,7 +83,7 @@
 
 (defn add-new-player [name league]
   (let [player (assoc nil :_id (ObjectId.) :name name :rating 1200 :rating-rd 350 :volatility 0.06)]
-    (mc/insert (get-db league) "players" player)
+    (log/info (mc/insert (get-db league) "players" player))
     player))
 
 (defn get-latest-game-between-players [white black games latest]
@@ -103,7 +103,7 @@
       (do
         (update-player (assoc (get-player-from-id (:white game)) :rating (:white-old-rating game) :rating-rd (:white-old-rd game)))
         (update-player (assoc (get-player-from-id (:black game)) :rating (:black-old-rating game) :rating-rd (:black-old-rd game)))
-        (mc/remove-by-id db "games" (ObjectId. id)))
+        (log/info (mc/remove-by-id db "games" (ObjectId. id))))
       (throw (IllegalArgumentException. "To old")))))
 
 ;;Deleting players will not change any ratings
@@ -113,7 +113,7 @@
 
 (defn create-league [league-name settings]
   (let [league (assoc nil :_id (ObjectId.) :name league-name :settings settings)]
-       (mc/insert (get-db "leagues") "settings" league)
+       (log/info (mc/insert (get-db "leagues") "settings" league))
        league))
 
 (defn get-league [id]

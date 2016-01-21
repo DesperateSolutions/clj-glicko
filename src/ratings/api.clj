@@ -1,20 +1,16 @@
 (ns ratings.api
   (:require [compojure.api.sweet :refer :all]
-            [schema.core :as s]
             [ratings.persistance :as persistance]
+            [ratings.schemas :refer :all]
             [cheshire.core :as json]
             [ring.middleware.cors :refer [wrap-cors]]
             [ring.util.response :refer [redirect]]
             [ring.util.http-response :refer [ok]]
+            [schema.core :as s]
             [ring.middleware.defaults :refer [wrap-defaults api-defaults]])
   (:import [org.bson.types ObjectId]))
 
-(s/defschema player
-  {:name s/Str
-   :rating s/Num
-   :rating-rd s/Num
-   :volatility s/Num
-   :_id ObjectId})
+(s/defschema Total {:total Long})
 
 (defapi ratings-routes
   (swagger-ui)
@@ -24,7 +20,20 @@
   (context* "" []
             :tags ["api"]
             (GET* "/leagues" []
-                 (ok (persistance/get-leagues)))))
+                  :summary "Returns all leagues"
+                  :return [League]
+                 (ok (persistance/get-leagues)))
+            (GET* "/league" [id]
+                  :summary "Return a specific league"
+                  :return League
+                  :form-params [id :- String]
+                  :description "Return a specific league. Requires BSON id as a form-param"
+                  (ok (persistance/get-league id)))
+            (GET* "/:league/players" [league]
+                  :path-params [league :- String]
+                  :return [player]
+                  (ok (persistance/get-leagues league)))))
+
 
 ;; (defroutes ratings-routes
 ;;   (route/resources "/")

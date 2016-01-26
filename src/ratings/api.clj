@@ -5,6 +5,7 @@
             [cheshire.core :as json]
             [ring.middleware.cors :refer [wrap-cors]]
             [ring.util.response :refer [redirect]]
+            [clojure.tools.logging :as log]
             [ring.middleware.defaults :refer [wrap-defaults api-defaults]]))
 
 (defroutes ratings-routes
@@ -30,7 +31,7 @@
        {:status 200
         :body (json/generate-string (persistance/get-leagues))
         :headers {"Content-Type" "application/json"}})
-  (POST "/leagues" {{:strs [league-name settings] :as params} :form-params session :session headers :headers}
+  (POST "/leagues" {{:strs [league-name settings] :as params} :params session :session headers :headers}
         (try
           (json/generate-string (persistance/create-league league-name (json/parse-string settings true)))
           (catch com.fasterxml.jackson.core.JsonParseException e
@@ -53,7 +54,7 @@
             {:status 500
              :headers {"Content-Type" "application/json"}
              :body (json/generate-string {:error (str "An unexpected error occurred! ")})})))
-  (POST "/:league/games" {{:strs [whiteId blackId result] league :league :as params} :form-params session :session headers :headers}
+  (POST "/:league/games" {{:keys [whiteId blackId result league] :as params} :params session :session headers :headers}
          (try
            (json/generate-string (persistance/score-game whiteId blackId (Integer. result) league))
            (catch com.fasterxml.jackson.core.JsonParseException e
@@ -77,7 +78,7 @@
               :headers {"Content-Type" "application/json"}
               :body (json/generate-string {:error (str "An unexpected error occurred! ")})})))
   
-  (POST "/:league/players" {{:strs [name] league :league :as params} :form-params session :session headers :headers}
+  (POST "/:league/players" {{:keys [name league]} :params session :session headers :headers}
          (try
            (json/generate-string (persistance/add-new-player name league))
            (catch com.fasterxml.jackson.core.JsonParseException e
@@ -100,7 +101,7 @@
              {:status 500
               :headers {"Content-Type" "application/json"}
               :body (json/generate-string {:error (str "An unexpected error occurred! ")})})))
-  (DELETE "/:league/player" {{:strs [_id] league :league :as params} :form-params session :seesion headers :headers}
+  (DELETE "/:league/players" {{:keys [_id league] :as params} :params session :seesion headers :headers}
           (try
             (str (persistance/delete-player _id league))
             (catch com.fasterxml.jackson.core.JsonParseException e
@@ -123,7 +124,7 @@
              {:status 500
               :headers {"Content-Type" "application/json"}
               :body (json/generate-string {:error (str "An unexpected error occurred! ")})})))          
-  (DELETE "/:league/game" {{:strs [_id] league :league :as params} :form-params session :seesion headers :headers}
+  (DELETE "/:league/games" {{:keys [_id league] :as params} :params session :seesion headers :headers}
           (try
             (str (persistance/delete-game _id league))
             (catch com.fasterxml.jackson.core.JsonParseException e

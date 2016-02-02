@@ -33,7 +33,7 @@
 
 (defn get-games [league]
   (let [db (get-db league)]
-    (doall (map (fn [{white :white black :black result :result id :_id}]
+    (doall (map (fn [{white :white black :black result :result id :_id time-added :added}]
                     (let [white-name (:name (mc/find-map-by-id db "players" (ObjectId. white)))
                           black-name (:name (mc/find-map-by-id db "players" (ObjectId. black)))
                           result-string (cond (= result 1)
@@ -42,7 +42,7 @@
                                               (str black-name " won!")
                                               :else
                                               "Drawn!")]
-                      (assoc nil :white white-name :black black-name :result result-string :_id id)))
+                      (assoc nil :white white-name :black black-name :result result-string :timestamp time-added :_id id)))
                 (mc/find-maps db "games")))))
 
 (defn get-data []

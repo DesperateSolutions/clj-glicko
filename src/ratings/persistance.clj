@@ -29,8 +29,8 @@
 
 
 (defn get-players [league]
-  (doall (map (fn [player] 
-                (assoc player :rating (Math/round (double (:rating player))))) 
+  (doall (map (fn [player]
+                (assoc player :rating (Math/round (double (:rating player)))))
               (mc/find-maps (get-db league) "players"))))
 
 (defn get-games [league]
@@ -54,7 +54,7 @@
   (mc/find-map-by-id (get-db league) "players" (ObjectId. id)))
 
 (defn add-game [{rating1 :rating rd1 :rating-rd id1 :_id volatility1 :volatility} {rating2 :rating rd2 :rating-rd id2 :_id volatility2 :volatility} result league]
-  (let [game (assoc nil 
+  (let [game (assoc nil
                :_id (ObjectId.)
                :white (str id1)
                :black (str id2)
@@ -103,8 +103,8 @@
         game (mc/find-map-by-id db "games" (ObjectId. id))]
     (if (= game (get-latest-game-between-players (:white game) (:black game) (mc/find-maps db "games") nil))
       (do
-        (update-player (assoc (get-player-from-id (:white game) league) :rating (:white-old-rating game) :rating-rd (:white-old-rd game)))
-        (update-player (assoc (get-player-from-id (:black game) league) :rating (:black-old-rating game) :rating-rd (:black-old-rd game)))
+        (update-player (assoc (get-player-from-id (:white game) league) :rating (:white-old-rating game) :rating-rd (:white-old-rd game)) league)
+        (update-player (assoc (get-player-from-id (:black game) league) :rating (:black-old-rating game) :rating-rd (:black-old-rd game)) league)
         (log/info (mc/remove-by-id db "games" (ObjectId. id))))
       (throw (IllegalArgumentException. "To old")))))
 

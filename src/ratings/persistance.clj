@@ -103,8 +103,8 @@
         game (mc/find-map-by-id db "games" (ObjectId. id))]
     (if (= game (get-latest-game-between-players (:white game) (:black game) (mc/find-maps db "games") nil))
       (do
-        (update-player (assoc (get-player-from-id (:white game)) :rating (:white-old-rating game) :rating-rd (:white-old-rd game)))
-        (update-player (assoc (get-player-from-id (:black game)) :rating (:black-old-rating game) :rating-rd (:black-old-rd game)))
+        (update-player (assoc (get-player-from-id (:white game) league) :rating (:white-old-rating game) :rating-rd (:white-old-rd game)))
+        (update-player (assoc (get-player-from-id (:black game) league) :rating (:black-old-rating game) :rating-rd (:black-old-rd game)))
         (log/info (mc/remove-by-id db "games" (ObjectId. id))))
       (throw (IllegalArgumentException. "To old")))))
 

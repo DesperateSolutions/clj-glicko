@@ -29,7 +29,9 @@
 
 
 (defn get-players [league]
-  (mc/find-maps (get-db league) "players"))
+  (doall (map (fn [player] 
+                (assoc player :rating (Math/round (double (:rating player))))) 
+              (mc/find-maps (get-db league) "players"))))
 
 (defn get-games [league]
   (let [db (get-db league)]

@@ -54,9 +54,9 @@
             {:status 500
              :headers {"Content-Type" "application/json"}
              :body (json/generate-string {:error (str "An unexpected error occurred! ")})})))
-  (POST "/:league/games" {{:keys [whiteId blackId result league] :as params} :params session :session headers :headers}
+  (POST "/:league/games" {{:keys [whiteId blackId result league score] :as params} :params session :session headers :headers}
          (try
-           (json/generate-string (persistance/score-game whiteId blackId (Integer. result) league))
+           (json/generate-string (persistance/score-game whiteId blackId (Integer. result) score league))
            (catch com.fasterxml.jackson.core.JsonParseException e
              (.printStackTrace e)
              {:status 406

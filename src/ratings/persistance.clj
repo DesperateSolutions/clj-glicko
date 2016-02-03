@@ -35,7 +35,7 @@
 
 (defn get-games [league]
   (let [db (get-db league)]
-    (doall (map (fn [{white :white black :black result :result id :_id time-added :added}]
+    (doall (map (fn [{white :white black :black result :result id :_id time-added :added score :score}]
                     (let [white-name (:name (mc/find-map-by-id db "players" (ObjectId. white)))
                           black-name (:name (mc/find-map-by-id db "players" (ObjectId. black)))
                           result-string (cond (= result 1)
@@ -44,7 +44,7 @@
                                               (str black-name " won!")
                                               :else
                                               "Drawn!")]
-                      (assoc nil :white white-name :black black-name :result result-string :timestamp time-added :_id id)))
+                      (assoc nil :white white-name :black black-name :result result-string :timestamp time-added :_id id :score score)))
                 (mc/find-maps db "games")))))
 
 (defn get-data []
@@ -53,7 +53,7 @@
 (defn get-player-from-id [id league]
   (mc/find-map-by-id (get-db league) "players" (ObjectId. id)))
 
-(defn add-game [{rating1 :rating rd1 :rating-rd id1 :_id volatility1 :volatility} {rating2 :rating rd2 :rating-rd id2 :_id volatility2 :volatility} result league]
+(defn add-game [{rating1 :rating rd1 :rating-rd id1 :_id volatility1 :volatility} {rating2 :rating rd2 :rating-rd id2 :_id volatility2 :volatility} result score league]
   (let [game (assoc nil
                :_id (ObjectId.)
                :white (str id1)
@@ -65,11 +65,12 @@
                :black-old-rd rd2
                :white-old-volatility volatility1
                :black-old-volatility volatility2
+               :score score
                :added (c/to-string (t/now)))]
     (log/info (mc/insert (get-db league) "games" game))
     game))
 
-(defn score-game [white-id black-id result league]
+(defn score-game [white-id black-id result score league]
   (let [player1 (get-player-from-id white-id league)
         player2 (get-player-from-id black-id league)]
     (cond (= 1 result)
@@ -81,7 +82,7 @@
           :else
           (do (update-player (glicko/get-glicko2 player1 player2 0.5) league)
               (update-player (glicko/get-glicko2 player2 player1 0.5) league)))
-    (add-game player1 player2 result league)))
+    (add-game player1 player2 result score league)))
 
 (defn add-new-player [name league]
   (let [player (assoc nil :_id (ObjectId.) :name name :rating 1200 :rating-rd 350 :volatility 0.06)]

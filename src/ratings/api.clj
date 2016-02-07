@@ -42,9 +42,9 @@
             (POST* "/:league/games" [league]
                    :summary "Add a game to the system"
                    :path-params [league :- String]
-                   :form-params [whiteId :- String blackId :- String result :- String]
+                   :form-params [whiteId :- String blackId :- String result :- String score :- String]
                    :return game
-                   (ok (persistance/score-game whiteId blackId result league)))
+                   (ok (persistance/score-game whiteId blackId result league score)))
             (POST* "/:league/player" [league]
                    :summary "Add a player to the system"
                    :path-params [league :- String]

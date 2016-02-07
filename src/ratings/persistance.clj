@@ -35,7 +35,7 @@
 
 (defn get-games [league]
   (let [db (get-db league)]
-    (doall (map (fn [{white :white black :black result :result id :_id time-added :added score :score}]
+    (doall (map (fn [{white :white black :black result :result id :_id added :added}]
                     (let [white-name (:name (mc/find-map-by-id db "players" (ObjectId. white)))
                           black-name (:name (mc/find-map-by-id db "players" (ObjectId. black)))
                           result-string (cond (= result 1)
@@ -44,7 +44,7 @@
                                               (str black-name " won!")
                                               :else
                                               "Drawn!")]
-                      (assoc nil :white white-name :black black-name :result result-string :timestamp time-added :_id id :score score)))
+                      (assoc nil :white white-name :black black-name :result result-string :_id id :added added)))
                 (mc/find-maps db "games")))))
 
 (defn get-data []
@@ -53,8 +53,8 @@
 (defn get-player-from-id [id league]
   (mc/find-map-by-id (get-db league) "players" (ObjectId. id)))
 
-(defn add-game [{rating1 :rating rd1 :rating-rd id1 :_id volatility1 :volatility} {rating2 :rating rd2 :rating-rd id2 :_id volatility2 :volatility} result score league]
-  (let [game (assoc nil
+(defn add-game [{rating1 :rating rd1 :rating-rd id1 :_id volatility1 :volatility white-name :name} {rating2 :rating rd2 :rating-rd id2 :_id volatility2 :volatility black-name :name} result league score]
+  (let [game (assoc nil 
                :_id (ObjectId.)
                :white (str id1)
                :black (str id2)
@@ -67,8 +67,14 @@
                :black-old-volatility volatility2
                :score score
                :added (c/to-string (t/now)))]
-    (log/info (mc/insert (get-db league) "games" game))
-    game))
+    (mc/insert (get-db league) "games" game)
+    (assoc nil 
+      :white white-name 
+      :black black-name 
+      :result result 
+      :added (:added game) 
+      :_id (str (:_id game)))))
+
 
 (defn score-game [white-id black-id result score league]
   (let [player1 (get-player-from-id white-id league)
@@ -106,12 +112,17 @@
       (do
         (update-player (assoc (get-player-from-id (:white game) league) :rating (:white-old-rating game) :rating-rd (:white-old-rd game)) league)
         (update-player (assoc (get-player-from-id (:black game) league) :rating (:black-old-rating game) :rating-rd (:black-old-rd game)) league)
-        (log/info (mc/remove-by-id db "games" (ObjectId. id))))
+        (mc/remove-by-id db "games" (ObjectId. id))
+        game)
       (throw (IllegalArgumentException. "To old")))))
 
 ;;Deleting players will not change any ratings
 (defn delete-player [id league]
-  (mc/remove-by-id (get-db league) "players" (ObjectId. id)))
+  (let [db (get-db league)
+        id (ObjectId. id)
+        player (mc/find-by-id db "players" id)]
+    (mc/remove-by-id db "players" id)
+    player))
 
 
 (defn create-league [league-name settings]

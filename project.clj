@@ -9,6 +9,7 @@
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [com.novemberain/monger "3.0.0-rc2"]
                  [cheshire "5.5.0"]
+                 [metosin/compojure-api "0.24.5" :exclusions [commons-codec]]
                  [compojure "1.4.0"]
                  [clj-time "0.11.0"]
                  [org.clojure/tools.logging "0.3.1"]

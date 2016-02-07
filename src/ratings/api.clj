@@ -1,157 +1,69 @@
 (ns ratings.api
-  (:require [compojure.core :refer :all]
-            [compojure.route :as route]
+  (:require [compojure.api.sweet :refer :all]
             [ratings.persistance :as persistance]
+            [ratings.schemas :refer :all]
             [cheshire.core :as json]
             [ring.middleware.cors :refer [wrap-cors]]
             [ring.util.response :refer [redirect]]
-            [clojure.tools.logging :as log]
-            [ring.middleware.defaults :refer [wrap-defaults api-defaults]]))
+            [ring.util.http-response :refer [ok]]
+            [schema.core :as s]
+            [ring.middleware.defaults :refer [wrap-defaults api-defaults]])
+  (:import [org.bson.types ObjectId]))
 
-(defroutes ratings-routes
-  (route/resources "/")
-  (GET "/:league/players" [league]
-       {:status 200
-        :body (json/generate-string (persistance/get-players league))
-        :headers {"Content-Type" "application/json"}})
-  (GET "/:league/games" [league]
-       {:status 200
-        :body (json/generate-string (persistance/get-games league))
-        :headers {"Content-Type" "application/json"}})
-  (GET "/league" {session :session
-                   headers :headers
-                   params :query-params
-                   {:strs [id] :as params} :form-params}
-       {:status 200
-        :body (json/generate-string (persistance/get-league id))
-        :headers {"Content-Type" "application/json"}})
-  (GET "/leagues" {session :session
-                   headers :headers
-                   params :query-params}
-       {:status 200
-        :body (json/generate-string (persistance/get-leagues))
-        :headers {"Content-Type" "application/json"}})
-  (POST "/leagues" {{:strs [league-name settings] :as params} :params session :session headers :headers}
-        (try
-          (json/generate-string (persistance/create-league league-name (json/parse-string settings true)))
-          (catch com.fasterxml.jackson.core.JsonParseException e
-            (.printStackTrace e)
-            {:status 406
-             :headers {"Content-Type" "application/json"}
-             :body (json/generate-string {:error (str "Unable JSON.")})})
-          (catch IllegalArgumentException e
-            (.printStackTrace e)
-            {:status 406
-             :headers {"Content-Type" "application/json"}
-             :body (json/generate-string {:error (.getMessage e)})})
-          (catch clojure.lang.ExceptionInfo e
-            (.printStackTrace e)
-            {:status 406
-             :headers {"Content-Type" "application/json"}
-             :body (json/generate-string {:error (-> e ex-data :causes)})})
-          (catch Exception e
-            (.printStackTrace e)
-            {:status 500
-             :headers {"Content-Type" "application/json"}
-             :body (json/generate-string {:error (str "An unexpected error occurred! ")})})))
-  (POST "/:league/games" {{:keys [whiteId blackId result league score] :as params} :params session :session headers :headers}
-         (try
-           (json/generate-string (persistance/score-game whiteId blackId (Integer. result) score league))
-           (catch com.fasterxml.jackson.core.JsonParseException e
-             (.printStackTrace e)
-             {:status 406
-              :headers {"Content-Type" "application/json"}
-              :body (json/generate-string {:error (str "Unable JSON.")})})
-           (catch IllegalArgumentException e
-             (.printStackTrace e)
-             {:status 406
-              :headers {"Content-Type" "application/json"}
-              :body (json/generate-string {:error (.getMessage e)})})
-           (catch clojure.lang.ExceptionInfo e
-             (.printStackTrace e)
-             {:status 406
-              :headers {"Content-Type" "application/json"}
-              :body (json/generate-string {:error (-> e ex-data :causes)})})
-           (catch Exception e
-             (.printStackTrace e)
-             {:status 500
-              :headers {"Content-Type" "application/json"}
-              :body (json/generate-string {:error (str "An unexpected error occurred! ")})})))
-  
-  (POST "/:league/players" {{:keys [name league]} :params session :session headers :headers}
-         (try
-           (json/generate-string (persistance/add-new-player name league))
-           (catch com.fasterxml.jackson.core.JsonParseException e
-             (.printStackTrace e)
-             {:status 406
-              :headers {"Content-Type" "application/json"}
-              :body (json/generate-string {:error (str "Unable JSON.")})})
-           (catch IllegalArgumentException e
-             (.printStackTrace e)
-             {:status 406
-              :headers {"Content-Type" "application/json"}
-              :body (json/generate-string {:error (.getMessage e)})})
-           (catch clojure.lang.ExceptionInfo e
-             (.printStackTrace e)
-             {:status 406
-              :headers {"Content-Type" "application/json"}
-              :body (json/generate-string {:error (-> e ex-data :causes)})})
-           (catch Exception e
-             (.printStackTrace e)
-             {:status 500
-              :headers {"Content-Type" "application/json"}
-              :body (json/generate-string {:error (str "An unexpected error occurred! ")})})))
-  (DELETE "/:league/players" {{:keys [_id league] :as params} :params session :seesion headers :headers}
-          (try
-            (str (persistance/delete-player _id league))
-            (catch com.fasterxml.jackson.core.JsonParseException e
-              (.printStackTrace e)
-              {:status 406
-               :headers {"Content-Type" "application/json"}
-               :body (json/generate-string {:error (str "Unable JSON.")})})
-            (catch IllegalArgumentException e
-              (.printStackTrace e)
-              {:status 406
-               :headers {"Content-Type" "application/json"}
-               :body (json/generate-string {:error (.getMessage e)})})
-            (catch clojure.lang.ExceptionInfo e
-              (.printStackTrace e)
-              {:status 406
-               :headers {"Content-Type" "application/json"}
-               :body (json/generate-string {:error (-> e ex-data :causes)})})
-           (catch Exception e
-             (.printStackTrace e)
-             {:status 500
-              :headers {"Content-Type" "application/json"}
-              :body (json/generate-string {:error (str "An unexpected error occurred! ")})})))          
-  (DELETE "/:league/games" {{:keys [_id league] :as params} :params session :seesion headers :headers}
-          (try
-            (str (persistance/delete-game _id league))
-            (catch com.fasterxml.jackson.core.JsonParseException e
-              (.printStackTrace e)
-              {:status 406
-               :headers {"Content-Type" "application/json"}
-               :body (json/generate-string {:error (str "Unable JSON.")})})
-            (catch IllegalArgumentException e
-              (.printStackTrace e)
-              {:status 406
-               :headers {"Content-Type" "application/json"}
-               :body (json/generate-string {:error (.getMessage e)})})
-            (catch clojure.lang.ExceptionInfo e
-              (.printStackTrace e)
-              {:status 406
-               :headers {"Content-Type" "application/json"}
-               :body (json/generate-string {:error (-> e ex-data :causes)})})
-            (catch Exception e
-              (.printStackTrace e)
-              {:status 500
-               :headers {"Content-Type" "application/json"}
-               :body (json/generate-string {:error (str "An unexpected error occurred! ")})})))          
-  
-  
-  
-  (route/not-found "<h1>Page not found</h1>"))
+(s/defschema Total {:total Long})
 
+(defapi ratings-routes
+  (swagger-ui)
+  (swagger-docs
+   {:info {:title "clj-glicko"
+           :description "REST api for clj-glicko"}})
+  (context* "" []
+            :tags ["api"]
+            (GET* "/leagues" []
+                  :summary "Returns all leagues"
+                  :return [league]
+                 (ok (persistance/get-leagues)))
+            (GET* "/league" []
+                  :summary "Return a specific league"
+                  :return league
+                  :query-params [league-id :- String]
+                  :description "Return a specific league. Requires BSON id as a form-param"
+                  (ok (persistance/get-league league-id)))
+            (GET* "/:league/players" [league]
+                  :summary "Return all players"
+                  :path-params [league :- String]
+                  :return [player]
+                  (ok (persistance/get-players league)))
+            (GET* "/:league/games" [league]
+                  :summary "Return all games"
+                  :path-params [league :- String]
+                  :return [game]
+                  (ok (persistance/get-games league)))
+            (POST* "/:league/games" [league]
+                   :summary "Add a game to the system"
+                   :path-params [league :- String]
+                   :form-params [whiteId :- String blackId :- String result :- String score :- String]
+                   :return game
+                   (ok (persistance/score-game whiteId blackId result league score)))
+            (POST* "/:league/player" [league]
+                   :summary "Add a player to the system"
+                   :path-params [league :- String]
+                   :form-params [name :- String]
+                   :return player
+                   (ok (persistance/add-new-player name league)))
+            (POST* "/leagues" []
+                   :summary "Add a league to the system"
+                   :form-params [league-name :- String settings :- s/Any]
+                   :return league
+                   (ok (persistance/create-league league-name settings)))
+            (DELETE* "/:league/player" [league]
+                     :summary "Delete a player from the system"
+                     :form-params [player-id :- String]
+                     (ok (persistance/delete-player player-id league)))
+            (DELETE* "/:league/game" [league]
+                     :summary "Delete a game from the stystem"
+                     :form-params [game-id :- String]
+                     (ok (persistance/delete-game game-id league)))))
 
 (def app
   (-> ratings-routes

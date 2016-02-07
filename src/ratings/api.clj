@@ -48,20 +48,23 @@
                    :summary "Add a player to the system"
                    :path-params [league :- String]
                    :form-params [name :- String]
-                   :return [player]
+                   :return player
                    (ok (persistance/add-new-player name league)))
             (POST* "/leagues" []
                    :summary "Add a league to the system"
                    :form-params [league-name :- String settings :- s/Any]
                    :return League
-                   (ok (persistance/create-league league-name settings)))))
-
-
-;;   (DELETE "/:league/player" {{:strs [_id] league :league :as params} :form-params session :seesion headers :headers}
-;;             (str (persistance/delete-player _id league))
-;;   (DELETE "/:league/game" {{:strs [_id] league :league :as params} :form-params session :seesion headers :headers}
-;;             (str (persistance/delete-game _id league))
-
+                   (ok (persistance/create-league league-name settings)))
+            (DELETE* "/:league/player" [league]
+                     :summary "Delete a player from the system"
+                     :form-params [player-id :- String]
+                     :return player
+                     (ok (persistance/delete-player player-id league)))
+            (DELETE* "/:league/game" [league]
+                     :summary "Delete a game from the stystem"
+                     :form-params [game-id :- String]
+                     :return game
+                     (ok (persistance/delete-game game-id league)))))
 
 (def app
   (-> ratings-routes

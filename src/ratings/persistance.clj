@@ -111,7 +111,11 @@
 
 ;;Deleting players will not change any ratings
 (defn delete-player [id league]
-  (mc/remove-by-id (get-db league) "players" (ObjectId. id)))
+  (let [db (get-db league)
+        id (ObjectId. id)
+        player (mc/find-by-id db "players" id)]
+    (mc/remove-by-id db "players" id)
+    player))
 
 
 (defn create-league [league-name settings]

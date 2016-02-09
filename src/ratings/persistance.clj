@@ -38,7 +38,7 @@
     (doall (map (fn [{white :white black :black result :result id :_id added :added}]
                     (let [white-name (:name (mc/find-map-by-id db "players" (ObjectId. white)))
                           black-name (:name (mc/find-map-by-id db "players" (ObjectId. black)))]
-                      (assoc nil :white white-name :black black-name :result result :_id id :added added)))
+                      (assoc nil :white white-name :black black-name :result (str result) :_id id :added added)))
                 (mc/find-maps db "games")))))
 
 (defn get-data []

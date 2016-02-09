@@ -40,11 +40,11 @@
                   :return [game]
                   (ok (persistance/get-games league)))
             (POST* "/:league/games" [league]
-                   :summary "Add a game to the system"
+                   :summary "Add a game to the system - Result should be in the form of X-Y, for example 1-0"
                    :path-params [league :- String]
-                   :form-params [whiteId :- String blackId :- String result :- String score :- String]
+                   :form-params [whiteId :- String blackId :- String result :- String]
                    :return game
-                   (ok (persistance/score-game whiteId blackId result league score)))
+                   (ok (persistance/score-game whiteId blackId result league)))
             (POST* "/:league/player" [league]
                    :summary "Add a player to the system"
                    :path-params [league :- String]

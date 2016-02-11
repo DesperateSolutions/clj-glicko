@@ -53,7 +53,7 @@
                    (ok (persistance/add-new-player name league)))
             (POST* "/leagues" []
                    :summary "Add a league to the system"
-                   :form-params [league-name :- String settings :- s/Any]
+                   :form-params [league-name :- String settings :- String]
                    :return league
                    (ok (persistance/create-league league-name settings)))
             (DELETE* "/:league/player" [league]

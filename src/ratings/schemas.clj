@@ -12,7 +12,8 @@
 
 (s/defschema league
   {:name s/Str
-   :_id s/Any})
+   :_id s/Any
+   :settings s/Any})
 
 (s/defschema game
   {:white s/Str

@@ -45,7 +45,7 @@
                    :form-params [whiteId :- String blackId :- String result :- String]
                    :return game
                    (ok (persistance/score-game whiteId blackId result league)))
-            (POST* "/:league/player" [league]
+            (POST* "/:league/players" [league]
                    :summary "Add a player to the system"
                    :path-params [league :- String]
                    :form-params [name :- String]
@@ -56,11 +56,11 @@
                    :form-params [league-name :- String settings :- String]
                    :return league
                    (ok (persistance/create-league league-name settings)))
-            (DELETE* "/:league/player" [league]
+            (DELETE* "/:league/players" [league]
                      :summary "Delete a player from the system"
                      :form-params [player-id :- String]
                      (ok (persistance/delete-player player-id league)))
-            (DELETE* "/:league/game" [league]
+            (DELETE* "/:league/games" [league]
                      :summary "Delete a game from the stystem"
                      :form-params [game-id :- String]
                      (ok (persistance/delete-game game-id league)))))

@@ -56,6 +56,10 @@
                    :form-params [league-name :- String settings :- String]
                    :return league
                    (ok (persistance/create-league league-name settings)))
+            (PUT* "/update"
+                  :form-params [league-name :- String]
+                  :summary "Updates RD of players that didn't play"
+                  (ok (persistance/update-rd league-name)))
             (DELETE* "/:league/players" [league]
                      :summary "Delete a player from the system"
                      :form-params [player-id :- String]

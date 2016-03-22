@@ -23,6 +23,8 @@
     (log/info (format "mongo-uri: %s" uri))
     (:db (mg/connect-via-uri uri))))
 
+
+
 (defn- update-player [player league]
   (let [db (get-db league)]
     (log/info (mc/update db "players" {:_id (:_id player)} player {:upsert true}))))
@@ -32,6 +34,15 @@
   (doall (map (fn [player]
                 (assoc player :rating (Math/round (double (:rating player)))))
               (mc/find-maps (get-db league) "players"))))
+
+(defn update-rd [league]
+  (doseq [player (get-players league)]
+    (if (= "true" (:has-played player))
+      (update-player (assoc player :has-played "false") league)
+      (update-player (assoc (glicko/update-rd-no-games player) :has-played "false") league))))
+
+(defn update-timed []
+  "This function should run the update on a timed basis for squash until the dashboard is sorted")
 
 (defn get-games [league]
   (let [db (get-db league)]
@@ -85,7 +96,7 @@
     (add-game player1 player2 result league)))
 
 (defn add-new-player [name league]
-  (let [player (assoc nil :_id (ObjectId.) :name name :rating 1200 :rating-rd 350 :volatility 0.06)]
+  (let [player (assoc nil :_id (ObjectId.) :name name :rating 1200 :rating-rd 350 :volatility 0.06 :has-played "false")]
     (log/info (mc/insert (get-db league) "players" player))
     player))
 

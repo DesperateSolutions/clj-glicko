@@ -94,4 +94,4 @@
         rd-marked (get-rd-marked rd-starred variance)
         rating-marked (get-rating-marked rating1 rd-marked g result e)]
     ;;Step 8
-    (assoc player :rating (+ 1500 (* 173.7178 rating-marked)) :rating-rd (* 173.7178 rd-marked) :volatility volatility-marked)))
+    (assoc player :rating (+ 1500 (* 173.7178 rating-marked)) :rating-rd (* 173.7178 rd-marked) :volatility volatility-marked :has-played "true")))

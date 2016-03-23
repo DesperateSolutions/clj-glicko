@@ -8,6 +8,7 @@
    :rating s/Num
    :rating-rd s/Num
    :volatility s/Num
+   :has-played s/Str
    :_id s/Any})
 
 (s/defschema league

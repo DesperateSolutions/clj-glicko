@@ -26,4 +26,6 @@
 (s/defschema bulkgames
   {:white s/Str
    :black s/Str
-   :result s/Str})
+   :result s/Str
+   :added s/Str
+   :_id s/Str})

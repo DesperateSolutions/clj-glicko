@@ -46,7 +46,7 @@
                    :return game
                    (ok (persistance/score-game whiteId blackId result league)))
             (POST* "/:league/bulkgames" [league]
-                   :summary "Add a collection of games"
+                   :summary "Add a collection of games - Result must be in the format of X-Y, example 1-0"
                    :path-params [league :- String]
                    :form-params [bulkgames]
                    (ok (persistance/add-games-bulk league (json/parse-string bulkgames true))))

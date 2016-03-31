@@ -107,25 +107,10 @@
 (defn add-games-bulk [league games]
   (let [current (atom nil)]
     (doseq [game games]
-      (cond
-       (not @current) (reset! current 
-                              (f/unparse (f/formatters :date) (f/parse (f/formatters :date-time (:added game)))))
-       (= @current  (f/unparse (f/formatters :date) (f/parse (f/formatters :date-time (:added game))))) 
-       (do (update-rd league)
-           (reset! current 
-                   (f/unparse (f/formatters :date) (f/parse (f/formatters :date-time (:added game)))))))
-      (let [players (mc/find-maps (get-db league) "players")
-            white (or (find-first #(= (:name %) (:white game)) players)
-                      (add-new-player (:white game) league))
-            black (or (find-first #(= (:name %) (:black game)) players)
-                      (add-new-player (:black game) league))]
-        (score-game (str (:_id white)) 
-                    (str (:_id black)) 
-                    (cond 
-                     (= (:result game) (str (:white game) " won!")) "1-0"
-                     (= (:result game) (str (:black game) " won!")) "0-1"
-                     :else "0-0")
-                    league)))))
+      (score-game (str (:white game)) 
+                  (str (:black game)) 
+                  (:result game)
+                  league))))
 
 (defn get-latest-game-between-players [white black games latest]
   (if (first games)

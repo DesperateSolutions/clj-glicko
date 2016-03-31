@@ -59,7 +59,7 @@
 (defn get-player-from-id [id league]
   (mc/find-map-by-id (get-db league) "players" (ObjectId. id)))
 
-(defn add-game [{rating1 :rating rd1 :rating-rd id1 :_id volatility1 :volatility white-name :name} {rating2 :rating rd2 :rating-rd id2 :_id volatility2 :volatility black-name :name} result league added]
+(defn add-game [{rating1 :rating rd1 :rating-rd id1 :_id volatility1 :volatility white-name :name} {rating2 :rating rd2 :rating-rd id2 :_id volatility2 :volatility black-name :name} result league]
   (let [game (assoc nil 
                :_id (ObjectId.)
                :white (str id1)
@@ -71,7 +71,7 @@
                :black-old-rd rd2
                :white-old-volatility volatility1
                :black-old-volatility volatility2
-               :added added;(c/to-string (t/now))
+               :added (c/to-string (t/now))
                )]
     (mc/insert (get-db league) "games" game)
     (assoc nil 
@@ -81,8 +81,7 @@
       :added (:added game) 
       :_id (str (:_id game)))))
 
-
-(defn score-game [white-id black-id result league added]
+(defn score-game [white-id black-id result league]
   (let [player1 (get-player-from-id white-id league)
         player2 (get-player-from-id black-id league)
         score (- (Integer. (first (clojure.string/split result #"-"))) (Integer. (last (clojure.string/split result #"-"))))]
@@ -95,10 +94,7 @@
           :else
           (do (update-player (glicko/get-glicko2 player1 player2 0.5) league)
               (update-player (glicko/get-glicko2 player2 player1 0.5) league)))
-    (add-game player1 player2 result league added)))
-
-(defn find-first [f users]
-  (first (filter f users)))
+    (add-game player1 player2 result league)))
 
 (defn add-new-player [name league]
   (let [player (assoc nil :_id (ObjectId.) :name name :rating 1200 :rating-rd 350 :volatility 0.06 :has-played "false")]
@@ -108,37 +104,10 @@
 (defn add-games-bulk [league games]
   (let [current (atom nil)]
     (doseq [game games]
-      (when @current
-        (do (println (str "ERRROR\n" (f/unparse (f/formatters :date-time) (f/parse (f/formatters :date) @current)) "-" (:timestamp game))))
-        (println (str "Comparing " @current " and " (f/unparse (f/formatters :date) (f/parse (f/formatters :date-time) (:timestamp game))) "\n" (not= @current (f/unparse (f/formatters :date) (f/parse (f/formatters :date-time) (:timestamp game)))))))
-      (cond
-       (not @current) (reset! current
-                              (f/unparse (f/formatters :date) (f/parse (f/formatters :date-time) (:timestamp game))))
-       (not= @current (f/unparse (f/formatters :date) (f/parse (f/formatters :date-time) (:timestamp game)))) 
-       (do (update-rd league)
-           (reset! current 
-                   (f/unparse (f/formatters :date) (f/parse (f/formatters :date-time) (:timestamp game))))))
-      (let [players (mc/find-maps (get-db league) "players")
-            white (or (find-first #(= (:name %) (:white game)) players)
-                      (add-new-player (:white game) league))
-            black (or (find-first #(= (:name %) (:black game)) players)
-                      (add-new-player (:black game) league))]
-        (score-game (str (:_id white)) 
-                    (str (:_id black)) 
-                    (cond 
-                     (= (:result game) (str (:white game) " won!")) "1-0"
-                     (= (:result game) (str (:black game) " won!")) "0-1"
-                     :else "0-0")
-                    league
-                    (:timestamp game))))))
-
-;; (defn add-games-bulk [league games]
-;;   (let [current (atom nil)]
-;;     (doseq [game games]
-;;       (score-game (str (:white game)) 
-;;                   (str (:black game)) 
-;;                   (:result game)
-;;                   league))))
+      (score-game (str (:white game)) 
+                  (str (:black game)) 
+                  (:result game)
+                  league))))
 
 (defn get-latest-game-between-players [white black games latest]
   (if (first games)

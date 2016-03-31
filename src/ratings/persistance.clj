@@ -4,6 +4,7 @@
             [monger.collection :as mc]
             [clj-time.core :as t]
             [clj-time.coerce :as c]
+            [clj-time.format :as f]
             [clojure.tools.logging :as log]
             [monger.json :refer :all])
   (:import [org.bson.types ObjectId]))
@@ -95,6 +96,32 @@
               (update-player (glicko/get-glicko2 player2 player1 0.5) league)))
     (add-game player1 player2 result league)))
 
+(defn find-first [f users]
+  (first (filter f users)))
+
+(defn add-games-bulk [league games]
+  (let [players (mc/find-maps (get-db league) "players")
+        current (atom nil)]
+    (doseq [game games]
+      (println "NEXT GAME!!!")
+      (println game)
+      (println (str (:_id (find-first #(= (:name %) (:white game)) players))))
+      (println (str (:_id (find-first #(= (:name %) (:black game)) players))))
+      (cond
+       (not @current) (reset! current 
+                              (f/unparse (f/formatters :date) (f/parse (f/formatters :date-time (:added game)))))
+       (= @current  (f/unparse (f/formatters :date) (f/parse (f/formatters :date-time (:added game))))) 
+       (do (update-rd league)
+           (reset! current 
+                   (f/unparse (f/formatters :date) (f/parse (f/formatters :date-time (:added game)))))))
+      (score-game (str (:_id (find-first #(= (:name %) (:white game)) players))) 
+                  (str (:_id (find-first #(= (:name %) (:black game)) players))) 
+                  (cond 
+                   (= (:result game) (str (:white game) " won!")) "1-0"
+                   (= (:result game) (str (:black game) " won!")) "0-1"
+                   :else "0-0")
+                  league))))
+
 (defn add-new-player [name league]
   (let [player (assoc nil :_id (ObjectId.) :name name :rating 1200 :rating-rd 350 :volatility 0.06 :has-played "false")]
     (log/info (mc/insert (get-db league) "players" player))
@@ -128,7 +155,6 @@
         player (mc/find-by-id db "players" id)]
     (mc/remove-by-id db "players" id)
     player))
-
 
 (defn create-league [league-name settings]
   (let [league (assoc nil :_id (ObjectId.) :name league-name :settings settings)]

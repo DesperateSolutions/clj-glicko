@@ -45,6 +45,11 @@
                    :form-params [whiteId :- String blackId :- String result :- String]
                    :return game
                    (ok (persistance/score-game whiteId blackId result league)))
+            (POST* "/:league/bulkgames" [league]
+                   :summary "Add a collection of games"
+                   :path-params [league :- String]
+                   :form-params [bulkgames]
+                   (ok (persistance/add-games-bulk league (json/parse-string bulkgames true))))
             (POST* "/:league/players" [league]
                    :summary "Add a player to the system"
                    :path-params [league :- String]

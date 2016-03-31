@@ -99,14 +99,14 @@
 (defn find-first [f users]
   (first (filter f users)))
 
+(defn add-new-player [name league]
+  (let [player (assoc nil :_id (ObjectId.) :name name :rating 1200 :rating-rd 350 :volatility 0.06 :has-played "false")]
+    (log/info (mc/insert (get-db league) "players" player))
+    player))
+
 (defn add-games-bulk [league games]
-  (let [players (mc/find-maps (get-db league) "players")
-        current (atom nil)]
+  (let [current (atom nil)]
     (doseq [game games]
-      (println "NEXT GAME!!!")
-      (println game)
-      (println (str (:_id (find-first #(= (:name %) (:white game)) players))))
-      (println (str (:_id (find-first #(= (:name %) (:black game)) players))))
       (cond
        (not @current) (reset! current 
                               (f/unparse (f/formatters :date) (f/parse (f/formatters :date-time (:added game)))))
@@ -114,18 +114,18 @@
        (do (update-rd league)
            (reset! current 
                    (f/unparse (f/formatters :date) (f/parse (f/formatters :date-time (:added game)))))))
-      (score-game (str (:_id (find-first #(= (:name %) (:white game)) players))) 
-                  (str (:_id (find-first #(= (:name %) (:black game)) players))) 
-                  (cond 
-                   (= (:result game) (str (:white game) " won!")) "1-0"
-                   (= (:result game) (str (:black game) " won!")) "0-1"
-                   :else "0-0")
-                  league))))
-
-(defn add-new-player [name league]
-  (let [player (assoc nil :_id (ObjectId.) :name name :rating 1200 :rating-rd 350 :volatility 0.06 :has-played "false")]
-    (log/info (mc/insert (get-db league) "players" player))
-    player))
+      (let [players (mc/find-maps (get-db league) "players")
+            white (or (find-first #(= (:name %) (:white game)) players)
+                      (add-new-player (:white game) league))
+            black (or (find-first #(= (:name %) (:black game)) players)
+                      (add-new-player (:black game) league))]
+        (score-game (str (:_id white)) 
+                    (str (:_id black)) 
+                    (cond 
+                     (= (:result game) (str (:white game) " won!")) "1-0"
+                     (= (:result game) (str (:black game) " won!")) "0-1"
+                     :else "0-0")
+                    league)))))
 
 (defn get-latest-game-between-players [white black games latest]
   (if (first games)
@@ -158,8 +158,8 @@
 
 (defn create-league [league-name settings]
   (let [league (assoc nil :_id (ObjectId.) :name league-name :settings settings)]
-       (log/info (mc/insert (get-db "leagues") "settings" league))
-       league))
+    (log/info (mc/insert (get-db "leagues") "settings" league))
+    league))
 
 (defn get-league [id]
   (mc/find-map-by-id (get-db "leagues") "settings" (ObjectId. id)))

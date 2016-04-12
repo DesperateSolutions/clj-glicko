@@ -62,17 +62,22 @@
                    :return league
                    (ok (persistance/create-league league-name settings)))
             (POST* "/:league/update" [league]            
-                  :summary "Updates RD of players that didn't play"
-                  :path-params [league :- String]
-                  (ok (persistance/update-rd league)))
+                   :summary "Updates RD of players that didn't play"
+                   :path-params [league :- String]
+                   (ok (persistance/update-rd league)))
             (DELETE* "/:league/players" [league]
                      :summary "Delete a player from the system"
                      :form-params [player-id :- String]
                      (ok (persistance/delete-player player-id league)))
             (DELETE* "/:league/games" [league]
-                     :summary "Delete a game from the stystem"
+                     :summary "Delete a game from the system"
                      :form-params [game-id :- String]
-                     (ok (persistance/delete-game game-id league)))))
+                     (ok (persistance/delete-game game-id league)))
+            (DELETE* "/:league/oldremove" [league]
+                     :summary "Used to remove a single game of old. Should be used with extreme care"
+                     :path-params [league :- String]
+                     :form-params [game-id :- String]
+                     (ok (persistance/delete-and-add-games-bulk league game-id)))))
 
 (def app
   (-> ratings-routes

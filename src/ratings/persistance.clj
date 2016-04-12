@@ -59,7 +59,7 @@
 (defn get-player-from-id [id league]
   (mc/find-map-by-id (get-db league) "players" (ObjectId. id)))
 
-(defn add-game [{rating1 :rating rd1 :rating-rd id1 :_id volatility1 :volatility white-name :name} {rating2 :rating rd2 :rating-rd id2 :_id volatility2 :volatility black-name :name} result league]
+(defn add-game [{rating1 :rating rd1 :rating-rd id1 :_id volatility1 :volatility white-name :name} {rating2 :rating rd2 :rating-rd id2 :_id volatility2 :volatility black-name :name} result league added]
   (let [game (assoc nil 
                :_id (ObjectId.)
                :white (str id1)
@@ -71,8 +71,7 @@
                :black-old-rd rd2
                :white-old-volatility volatility1
                :black-old-volatility volatility2
-               :added (c/to-string (t/now))
-               )]
+               :added (or (first added) (c/to-string (t/now))))]
     (mc/insert (get-db league) "games" game)
     (assoc nil 
       :white white-name 
@@ -81,7 +80,7 @@
       :added (:added game) 
       :_id (str (:_id game)))))
 
-(defn score-game [white-id black-id result league]
+(defn score-game [white-id black-id result league & added]
   (let [player1 (get-player-from-id white-id league)
         player2 (get-player-from-id black-id league)
         score (- (Integer. (first (clojure.string/split result #"-"))) (Integer. (last (clojure.string/split result #"-"))))]
@@ -94,20 +93,62 @@
           :else
           (do (update-player (glicko/get-glicko2 player1 player2 0.5) league)
               (update-player (glicko/get-glicko2 player2 player1 0.5) league)))
-    (add-game player1 player2 result league)))
+    (add-game player1 player2 result league added)))
 
 (defn add-new-player [name league]
   (let [player (assoc nil :_id (ObjectId.) :name name :rating 1200 :rating-rd 350 :volatility 0.06 :has-played "false")]
     (log/info (mc/insert (get-db league) "players" player))
     player))
 
-(defn add-games-bulk [league games]
+(defn add-games-bulk [league  games]
   (let [current (atom nil)]
     (doseq [game games]
       (score-game (str (:white game)) 
                   (str (:black game)) 
                   (:result game)
                   league))))
+
+(defn- delete-all-players [league]
+  (let [db (get-db league)]
+    (doseq [player (mc/find-maps db "players")]
+      (mc/remove-by-id db "players" (:_id player)))))
+
+(defn- delete-all-games [league]
+  (let [db (get-db league)]
+    (doseq [game (mc/find-maps db "games")]
+      (mc/remove-by-id db "games" (:_id game)))))
+
+(defn find-first [f users]
+  (first (filter f users)))
+
+(defn delete-and-add-games-bulk [league game-id]
+  (let [games (get-games league)
+        current (atom nil)
+        del-game (find-first #(= (str (:_id %)) game-id) games)]
+    (if del-game
+      (do
+        (delete-all-games league)
+        (delete-all-players league)
+        (doseq [game games]
+          (when-not (= game-id (str (:_id game)))
+            (cond
+             (not @current) (reset! current
+                                    (f/unparse (f/formatters :date) (f/parse (f/formatters :date-time) (:added game))))
+             (not= @current (f/unparse (f/formatters :date) (f/parse (f/formatters :date-time) (:added game)))) 
+             (do (update-rd league)
+                 (reset! current 
+                         (f/unparse (f/formatters :date) (f/parse (f/formatters :date-time) (:added game))))))
+            (let [players (mc/find-maps (get-db league) "players")
+                  white (or (find-first #(= (:name %) (:white game)) players)
+                            (add-new-player (:white game) league))
+                  black (or (find-first #(= (:name %) (:black game)) players)
+                            (add-new-player (:black game) league))]
+              (score-game (str (:_id white)) 
+                          (str (:_id black)) 
+                          (:result game)
+                          league
+                          (:added game))))))
+      (throw (Exception. "Can't find game")))))
 
 (defn get-latest-game-between-players [white black games latest]
   (if (first games)

@@ -1,7 +1,7 @@
 (defproject com.chess-rating/rating "0.1.0-SNAPSHOT"
   :min-lein-version "2.0.0"
-  :description ""
-  :url ""
+  :description "A simple glicko rater with built in api support. "
+  :url "https://github.com/Molyna/clj-glicko"
   :profiles {:dev {:dependencies [[org.clojure/tools.namespace "0.2.8"]]
                    :source-paths ["dev"]}}
   :license {:name "Eclipse Public License"

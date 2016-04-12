@@ -139,7 +139,7 @@
     player))
 
 (defn create-league [league-name settings]
-  (let [league (assoc nil :_id (ObjectId.) :name league-name :settings settings)]
+  (let [league (assoc nil :_id (ObjectId.) :name league-name :draw (:draw settings) :period-length (:period settings) :scoreable (:scoreable settings))]
     (log/info (mc/insert (get-db "leagues") "settings" league))
     league))
 

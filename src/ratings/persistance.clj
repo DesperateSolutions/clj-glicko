@@ -147,7 +147,7 @@
   (let [db (get-db league)
         games (get-games db league)
         current (atom nil)
-        del-game (or (find-first #(= (str (:_id %)) game-id) games) {:_id nil})]
+        del-game (find-first #(= (str (:_id %)) game-id) games)]
     (if del-game
       (do
         (delete-all-games db league)

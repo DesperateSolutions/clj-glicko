@@ -167,10 +167,7 @@
         (score-game db 
                     (str (:_id white)) 
                     (str (:_id black)) 
-                    (cond 
-                     (= (:result game) (str (:white game) " won!")) "1-0"
-                     (= (:result game) (str (:black game) " won!")) "0-1"
-                     :else "0-0")
+                    (:result game)
                     league
                     (:added game))))))
 

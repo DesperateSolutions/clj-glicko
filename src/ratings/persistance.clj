@@ -122,7 +122,7 @@
 (defn find-first [f users]
   (first (filter f users)))
 
-(defn add-games-bulk [league games]
+(defn add-games-bulk2 [league games]
   (doseq [game games]
     (score-game (str (:white game)) 
                 (str (:black game)) 
@@ -142,6 +142,37 @@
   ([db league]
    (doseq [game (mc/find-maps db "games")]
      (mc/remove-by-id db "games" (:_id game)))))
+
+(defn add-games-bulk [league games]
+  (let [db (get-db league)
+        current (atom nil)]
+    (delete-all-games db league)
+    (delete-all-players db league)
+    (doseq [game games]
+      (when @current
+        (do (println (str "ERRROR\n" (f/unparse (f/formatters :date-time) (f/parse (f/formatters :date) @current)) "-" (:added game))))
+        (println (str "Comparing " @current " and " (f/unparse (f/formatters :date) (f/parse (f/formatters :date-time) (:added game))) "\n" (not= @current (f/unparse (f/formatters :date) (f/parse (f/formatters :date-time) (:added game)))))))
+      (cond
+       (not @current) (reset! current
+                              (f/unparse (f/formatters :date) (f/parse (f/formatters :date-time) (:added game))))
+       (not= @current (f/unparse (f/formatters :date) (f/parse (f/formatters :date-time) (:added game)))) 
+       (do (update-rd db league)
+           (reset! current 
+                   (f/unparse (f/formatters :date) (f/parse (f/formatters :date-time) (:added game))))))
+      (let [players (mc/find-maps db "players")
+            white (or (find-first #(= (:name %) (:white game)) players)
+                      (add-new-player db (:white game) league))
+            black (or (find-first #(= (:name %) (:black game)) players)
+                      (add-new-player db (:black game) league))]
+        (score-game db 
+                    (str (:_id white)) 
+                    (str (:_id black)) 
+                    (cond 
+                     (= (:result game) (str (:white game) " won!")) "1-0"
+                     (= (:result game) (str (:black game) " won!")) "0-1"
+                     :else "0-0")
+                    league
+                    (:added game))))))
 
 (defn delete-and-add-games-bulk [league game-id]
   (let [db (get-db league)

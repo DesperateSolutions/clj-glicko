@@ -63,6 +63,11 @@
                    :summary "Updates RD of players that didn't play"
                    :path-params [league :- String]
                    (ok (persistance/update-rd league)))
+            (POST "/:league/reseed" [league]
+                  :summary "Reseeds the db with all the games from the bulk parameter. Deletes all games currently in db"
+                  :path-params [league :- String]
+                  :form-params [reseed]
+                  (ok (persistance/reseed-db-with-games-and-players league (json/parse-string reseed true))))
             (DELETE "/:league/players" [league]
                      :summary "Delete a player from the system"
                      :form-params [player-id :- String]

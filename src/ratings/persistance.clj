@@ -122,7 +122,7 @@
 (defn find-first [f users]
   (first (filter f users)))
 
-(defn add-games-bulk2 [league games]
+(defn add-games-bulk [league games]
   (doseq [game games]
     (score-game (str (:white game)) 
                 (str (:black game)) 
@@ -143,7 +143,7 @@
    (doseq [game (mc/find-maps db "games")]
      (mc/remove-by-id db "games" (:_id game)))))
 
-(defn add-games-bulk [league games]
+(defn reseed-db-with-games-and-players [league games]
   (let [db (get-db league)
         current (atom nil)]
     (delete-all-games db league)

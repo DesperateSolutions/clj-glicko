@@ -11,6 +11,8 @@ pom.xml.asc
 *~
 *.txt
 *_back.clj
+*_back
+temp
 
 .idea
 .iml

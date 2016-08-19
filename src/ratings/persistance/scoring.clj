@@ -1,4 +1,4 @@
-(ns ratings.persistance
+(ns ratings.persistance.scoring
   (:require [ratings.glicko :as glicko]
             [monger.core :as mg]
             [monger.collection :as mc]

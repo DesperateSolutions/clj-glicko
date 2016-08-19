@@ -16,4 +16,4 @@
                  [ring/ring-defaults "0.2.0"]
                  [ring-cors "0.1.7"]]
   :plugins [[lein-ring "0.9.7"]]
-  :ring {:handler ratings.api/app})
+  :ring {:handler ratings.api.api/app})

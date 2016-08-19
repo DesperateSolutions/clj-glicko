@@ -1,4 +1,4 @@
-(ns ratings.schemas
+(ns ratings.api.schemas
   (:require [schema.core :as s])
   (:import [org.bson.types ObjectId]))
 

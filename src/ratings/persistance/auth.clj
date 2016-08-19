@@ -1,0 +1,1 @@
+(ns rating.persistance.auth)

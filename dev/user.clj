@@ -2,7 +2,7 @@
   (:require 
    [clojure.tools.namespace.repl :refer [refresh refresh-all]]
    [ratings.glicko :as glicko]
-   [ratings.persistance :as p]))
+   [ratings.persistance.scoring :as p]))
 
 (def system
   "A Var containing an object representing the application under

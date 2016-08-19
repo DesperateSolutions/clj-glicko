@@ -7,13 +7,14 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.8.0"]
-                 [com.novemberain/monger "3.0.2"]
-                 [cheshire "5.6.1"]
-                 [metosin/compojure-api "1.1.0" :exclusions [commons-codec]]
-                 [compojure "1.5.0"]
-                 [clj-time "0.11.0"]
+                 [com.novemberain/monger "3.0.1"]
+                 [cheshire "5.6.3"]
+                 [metosin/compojure-api "1.1.6" :exclusions [commons-codec]]
+                 [compojure "1.5.1"]
+                 [clj-time "0.12.0"]
                  [org.clojure/tools.logging "0.3.1"]
-                 [ring/ring-defaults "0.2.0"]
-                 [ring-cors "0.1.7"]]
+                 [ring/ring-defaults "0.2.1"]
+                 [ring-cors "0.1.8"]
+                 [com.cemerick/friend "0.2.3" :exclusions [slingshot org.clojure/core.cache commons-logging org.clojure/data.priority-map]]]
   :plugins [[lein-ring "0.9.7"]]
   :ring {:handler ratings.api.api/app})

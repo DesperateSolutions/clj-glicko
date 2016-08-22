@@ -203,7 +203,7 @@
       (throw (Exception. "Can't find game")))))
 
 (defn create-league [league-name settings]
-  (let [league (assoc nil :_id (ObjectId.) :name league-name :draw (:draw settings) :period-length (:period settings) :scoreable (:scoreable settings))]
+  (let [league (assoc nil :_id (ObjectId.) :name league-name :settings (assoc {} :draw (:draw settings) :period-length (:period settings) :scoreable (:scoreable settings)))]
     (log/info (mc/insert (get-db "leagues") "settings" league))
     league))
 
@@ -213,9 +213,13 @@
 (defn get-leagues []
   (->> (mc/find-maps (get-db "leagues") "settings")
        (reduce (fn [return league]
-                 (if (:settings league)
-                   (conj return league)
-                   (conj return (assoc league :settings (assoc nil :draw "" :period-length "" :scoreable "")))))
+                 (let [s (:settings league)]
+                   (conj return 
+                         (assoc league 
+                           :settings (assoc nil 
+                                       :draw (or (:draw s) "a") 
+                                       :period-length (or (:period-length s) "a") 
+                                       :scoreable (or (:scoreable s) "a"))))))
                [])))
 
 

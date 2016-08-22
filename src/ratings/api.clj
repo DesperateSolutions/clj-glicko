@@ -23,7 +23,7 @@
                  (ok (persistance/get-leagues)))
             (GET "/league" []
                   :summary "Return a specific league"
-                  :return league
+                  ;:return league
                   :query-params [league-id :- String]
                   :description "Return a specific league. Requires BSON id as a form-param"
                   (ok (persistance/get-league league-id)))

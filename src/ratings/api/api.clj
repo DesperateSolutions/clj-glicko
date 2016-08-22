@@ -8,7 +8,10 @@
             [ring.util.response :refer [redirect]]
             [ring.util.http-response :refer [ok]]
             [schema.core :as s]
-            [ring.middleware.defaults :refer [wrap-defaults api-defaults]])
+            [ring.middleware.defaults :refer [wrap-defaults api-defaults]]
+            [cemerick.friend :as friend]
+            (cemerick.friend [workflows :as workflows]
+                             [credentials :as creds]))
   (:import [org.bson.types ObjectId]))
 
 (s/defschema Total {:total Long})
@@ -85,6 +88,8 @@
 
 (def app
   (-> ratings-routes
+      (friend/authenticate {:credential-fn (partial creds/bcrypt-credential-fn auth/users)
+                            :workflows [(workflows/interactive-form)]})
       (wrap-defaults api-defaults)
       (wrap-cors :access-control-allow-origin [#".*"]
                  :access-control-allow-methods [:get :put :post :delete])))

@@ -213,6 +213,7 @@
 (defn get-leagues []
   (->> (mc/find-maps (get-db "leagues") "settings")
        (reduce (fn [return league]
+                 (log/info league)
                  (let [s (:settings league)]
                    (conj return 
                          (assoc league 

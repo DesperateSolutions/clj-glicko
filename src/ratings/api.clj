@@ -19,7 +19,7 @@
            :tags ["api"]
            (GET "/leagues" []
                   :summary "Returns all leagues"
-                  :return [league]
+                  ;:return [league]
                  (ok (persistance/get-leagues)))
             (GET "/league" []
                   :summary "Return a specific league"

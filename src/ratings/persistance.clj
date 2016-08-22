@@ -208,7 +208,10 @@
     league))
 
 (defn get-league [id]
-  (mc/find-map-by-id (get-db "leagues") "settings" (ObjectId. id)))
+  (let [league (mc/find-map-by-id (get-db "leagues") "settings" (ObjectId. id))] 
+    (assoc league :settings {:draw (or (:draw (:settings league)) "a") 
+                             :period-length (or (:period-length (:settings league)) "a") 
+                             :scoreable (or (:scoreable (:settings league)) "a")})))
 
 (defn get-leagues []
   (->> (mc/find-maps (get-db "leagues") "settings")

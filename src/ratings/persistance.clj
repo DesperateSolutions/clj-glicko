@@ -214,8 +214,8 @@
   (->> (mc/find-maps (get-db "leagues") "settings")
        (reduce (fn [return league]
                  (if (:settings league)
-                   (into return league)
-                   (into return (assoc league :settings (assoc nil :draw "" :period-length "" :scoreable "")))))
+                   (conj return league)
+                   (conj return (assoc league :settings (assoc nil :draw "" :period-length "" :scoreable "")))))
                [])))
 
 

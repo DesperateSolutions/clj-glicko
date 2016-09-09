@@ -73,15 +73,15 @@
                   :form-params [reseed]
                   (ok (scoring/reseed-db-with-games-and-players league (json/parse-string reseed true))))
             (DELETE "/:league/players" [league]
-                     :summary "Delete a player from the system"
+                     :summary "Delete a player from the system - This will not affect any rating"
                      :form-params [player-id :- String]
                      (ok (scoring/delete-player player-id league)))
             (DELETE "/:league/games" [league]
-                     :summary "Delete a game from the system"
+                     :summary "Delete a game from the system - Currently not supported"
                      :form-params [game-id :- String]
                      (ok (scoring/delete-game game-id league)))
             (DELETE "/:league/oldremove" [league]
-                     :summary "Used to remove a single game of old. Should be used with extreme care"
+                     :summary "Used to remove a single game of old. Should be used with extreme care - Make sure you backup the current list of games first"
                      :path-params [league :- String]
                      :form-params [game-id :- String]
                      (ok (scoring/delete-and-add-games-bulk league game-id)))))

@@ -231,15 +231,16 @@
 
 ;;Delete game will only allow deletion of the latest game played by both players
 (defn delete-game [id league]
-  (let [db (get-db league)
-        game (mc/find-map-by-id db "games" (ObjectId. id))]
-    (if (= game (get-latest-game-between-players (:white game) (:black game) (mc/find-maps db "games") nil))
-      (do
-        (update-player (assoc (get-player-from-id (:white game) league) :rating (:white-old-rating game) :rating-rd (:white-old-rd game)) league)
-        (update-player (assoc (get-player-from-id (:black game) league) :rating (:black-old-rating game) :rating-rd (:black-old-rd game)) league)
-        (mc/remove-by-id db "games" (ObjectId. id))
-        game)
-      (throw (IllegalArgumentException. "To old")))))
+  (when false ;This line makes this function not work
+    (let [db (get-db league)
+          game (mc/find-map-by-id db "games" (ObjectId. id))]
+      (if (= game (get-latest-game-between-players (:white game) (:black game) (mc/find-maps db "games") nil))
+        (do
+          (update-player (assoc (get-player-from-id (:white game) league) :rating (:white-old-rating game) :rating-rd (:white-old-rd game)) league)
+          (update-player (assoc (get-player-from-id (:black game) league) :rating (:black-old-rating game) :rating-rd (:black-old-rd game)) league)
+          (mc/remove-by-id db "games" (ObjectId. id))
+          game)
+        (throw (IllegalArgumentException. "To old"))))))
 
 ;;Deleting players will not change any ratings
 (defn delete-player [id league]

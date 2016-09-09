@@ -143,33 +143,33 @@
    (doseq [game (mc/find-maps db "games")]
      (mc/remove-by-id db "games" (:_id game)))))
 
-(defn reseed-db-with-games-and-players [league games]
-  (let [db (get-db league)
-        current (atom nil)]
-    (delete-all-games db league)
-    (delete-all-players db league)
-    (doseq [game games]
-      (when @current
-        (do (println (str "ERRROR\n" (f/unparse (f/formatters :date-time) (f/parse (f/formatters :date) @current)) "-" (:added game))))
-        (println (str "Comparing " @current " and " (f/unparse (f/formatters :date) (f/parse (f/formatters :date-time) (:added game))) "\n" (not= @current (f/unparse (f/formatters :date) (f/parse (f/formatters :date-time) (:added game)))))))
-      (cond
-       (not @current) (reset! current
-                              (f/unparse (f/formatters :date) (f/parse (f/formatters :date-time) (:added game))))
-       (not= @current (f/unparse (f/formatters :date) (f/parse (f/formatters :date-time) (:added game)))) 
-       (do (update-rd db league)
-           (reset! current 
-                   (f/unparse (f/formatters :date) (f/parse (f/formatters :date-time) (:added game))))))
-      (let [players (mc/find-maps db "players")
-            white (or (find-first #(= (:name %) (:white game)) players)
-                      (add-new-player db (:white game) league))
-            black (or (find-first #(= (:name %) (:black game)) players)
-                      (add-new-player db (:black game) league))]
-        (score-game db 
-                    (str (:_id white)) 
-                    (str (:_id black)) 
-                    (:result game)
-                    league
-                    (:added game))))))
+(defn reseed-db-with-games-and-players 
+  ([league games]
+   (reseed-db-with-games-and-players db league games))
+  ([db league games]
+   (let [db (get-db league)
+         current (atom nil)]
+     (delete-all-games db league)
+     (delete-all-players db league)
+     (doseq [game games]
+       (cond
+        (not @current) (reset! current
+                               (f/unparse (f/formatters :date) (f/parse (f/formatters :date-time) (:added game))))
+        (not= @current (f/unparse (f/formatters :date) (f/parse (f/formatters :date-time) (:added game)))) 
+        (do (update-rd db league)
+            (reset! current 
+                    (f/unparse (f/formatters :date) (f/parse (f/formatters :date-time) (:added game))))))
+       (let [players (mc/find-maps db "players")
+             white (or (find-first #(= (:name %) (:white game)) players)
+                       (add-new-player db (:white game) league))
+             black (or (find-first #(= (:name %) (:black game)) players)
+                       (add-new-player db (:black game) league))]
+         (score-game db 
+                     (str (:_id white)) 
+                     (str (:_id black)) 
+                     (:result game)
+                     league
+                     (:added game)))))))
 
 (defn delete-and-add-games-bulk [league game-id]
   (let [db (get-db league)
@@ -253,6 +253,10 @@
         (mc/remove-by-id db "games" (ObjectId. id))
         game)
       (throw (IllegalArgumentException. "To old")))))
+
+(defn- delete-all-games-from-player [id league db]
+  (let [games-without-player (filter #(and (not (= id (:black %))) (not (= id (:white %)))) (get-games db league))]
+    (reseed-db-with-games-and-players db league games-without-player)))
 
 ;;Deleting players will not change any ratings
 (defn delete-player [id league]

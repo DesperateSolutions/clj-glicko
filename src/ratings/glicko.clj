@@ -3,41 +3,41 @@
 ;;Glicko2
 
 ;;Step 2
-(defn convert-rating-to-glicko2 [rating]
+(defn- convert-rating-to-glicko2 [rating]
   (/ (- rating 1500) 173.7178))
 
-(defn convert-rd-to-glicko2 [rd]
+(defn- convert-rd-to-glicko2 [rd]
   (/ rd 173.7178))
 
 
 ;;Step 3
-(defn get-volatile-g [rd]
+(defn- get-volatile-g [rd]
   (/ 1 (Math/sqrt (+ 1 (/ (* 3 (Math/pow rd 2)) (Math/pow (Math/PI) 2))))))
 
-(defn get-volatile-e [rating1 rating2 g]
+(defn- get-volatile-e [rating1 rating2 g]
   (/ 1 (+ 1 (Math/exp (* (* -1 g) (- rating1 rating2))))))
 
-(defn get-variance [e g]
+(defn- get-variance [e g]
   (/ 1 (* (Math/pow g 2) e (- 1 e))))
 
 
 ;;Step 4
-(defn get-delta [e g v result]
+(defn- get-delta [e g v result]
   (* v g (- result e)))
 
 ;;Step 5
 ;;The F(x) function we got. Set up as partial most of the time
-(defn get-f [a delta rd v tau x]
+(defn- get-f [a delta rd v tau x]
   (- (/ (* (Math/exp x) (- (Math/pow delta 2) (Math/pow rd 2) v (Math/exp x))) (* 2 (Math/pow (+ (Math/pow rd 2) v (Math/exp x)) 2))) (/ (- x a) (Math/pow tau 2))))
 
 ;;Helper Function for getting B
-(defn get-b [k r a delta rd v f]
+(defn- get-b [k r a delta rd v f]
   (if (< (f (- a (* k r))) 0)
     (recur (inc k) r a delta rd v f)
     (- a (* k r) delta rd v)))
 
 ;;Helper function for iterative part of Step 5
-(defn get-ab [a b fa fb delta rd v r epsilon f]
+(defn- get-ab [a b fa fb delta rd v r epsilon f]
   (if (> (Math/abs (- a b)) epsilon)
     (let [c (+ a (/ (* (- a b) fa) (- fb fa)))
           fc (f c)]
@@ -47,7 +47,7 @@
     (Math/exp (/ a 2))))
 
 ;;The setup for the iterative part of Step 5
-(defn new-volatile [delta rd volatility v tau]
+(defn- new-volatile [delta rd volatility v tau]
   (let [epsilon 0.000001
         a (Math/log (Math/pow volatility 2))
         f (partial get-f a delta rd v tau)
@@ -57,14 +57,14 @@
     (get-ab a b (f a) (f b) delta rd v tau epsilon f)))
 
 ;;Step 6
-(defn pre-rating-rd [rd rd-marked]
+(defn- pre-rating-rd [rd rd-marked]
   (Math/sqrt (+ (Math/pow rd 2) (Math/pow rd-marked 2))))
 
 ;;Step 7
-(defn get-rd-marked [rd-starred v]
+(defn- get-rd-marked [rd-starred v]
   (/ 1 (Math/sqrt (+ (/ 1 (Math/pow rd-starred 2)) (/ 1 v)))))
 
-(defn get-rating-marked [rating rd-marked g result e]
+(defn- get-rating-marked [rating rd-marked g result e]
   (+ rating (* (Math/pow rd-marked 2) g (- result e))))
 
 

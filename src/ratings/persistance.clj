@@ -145,10 +145,9 @@
 
 (defn reseed-db-with-games-and-players 
   ([league games]
-   (reseed-db-with-games-and-players db league games))
+   (reseed-db-with-games-and-players (get-db league) league games))
   ([db league games]
-   (let [db (get-db league)
-         current (atom nil)]
+   (let [current (atom nil)]
      (delete-all-games db league)
      (delete-all-players db league)
      (doseq [game games]

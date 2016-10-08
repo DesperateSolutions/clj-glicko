@@ -46,8 +46,8 @@
             (POST "/:league/bulkgames" [league]
                    :summary "Add a collection of games - Result must be in the format of X-Y, example 1-0"
                    :path-params [league :- String]
-                   :form-params [bulkgames]
-                   (ok (persistance/add-games-bulk league (json/parse-string bulkgames true))))
+                   :body [games bulkgames]
+                   (ok (println games) (persistance/add-games-bulk league games)))
             (POST "/:league/players" [league]
                    :summary "Add a player to the system"
                    :path-params [league :- String]
@@ -66,7 +66,7 @@
             (POST "/:league/reseed" [league]
                   :summary "Reseeds the db with all the games from the bulk parameter. Deletes all games currently in db"
                   :path-params [league :- String]
-                  :form-params [reseed]
+                  :body-params [reseed]
                   (ok (persistance/reseed-db-with-games-and-players league (json/parse-string reseed true))))
             (DELETE "/:league/players" [league]
                      :summary "Delete a player from the system - Will not affect any rating"

@@ -113,14 +113,15 @@
 
 (defn add-games-bulk
   ([league games]
-   (add-games-bulk (get-db league) games))
+   (add-games-bulk (get-db league) league games))
   ([db league games]
    (doseq [game games]
      (score-game db
                  (str (:white game)) 
                  (str (:black game)) 
                  (:result game)
-                 league))))
+                 league
+                 nil))))
 
 (defn add-new-player 
   ([name league]

@@ -111,6 +111,17 @@
                (update-player db (glicko/get-glicko2 player2 player1 0.5) league)))
      (add-game db player1 player2 result league added))))
 
+(defn add-games-bulk
+  ([league games]
+   (add-games-bulk (get-db league) games))
+  ([db league games]
+   (doseq [game games]
+     (score-game db
+                 (str (:white game)) 
+                 (str (:black game)) 
+                 (:result game)
+                 league))))
+
 (defn add-new-player 
   ([name league]
    (add-new-player (get-db league) name league))
@@ -122,12 +133,7 @@
 (defn find-first [f users]
   (first (filter f users)))
 
-(defn add-games-bulk [league games]
-  (doseq [game games]
-    (score-game (str (:white game)) 
-                (str (:black game)) 
-                (:result game)
-                league)))
+
 
 (defn- delete-all-players 
   ([league]

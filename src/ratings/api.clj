@@ -69,14 +69,10 @@
                   :body [reseed bulkgames]
                   (ok (persistance/reseed-db-with-games-and-players league (json/parse-string reseed true))))
             (DELETE "/:league/players" [league]
-                     :summary "Delete a player from the system - Will not affect any rating"
+                     :summary "Delete a player from the system. Player with games can not be deleted"
                      :form-params [player-id :- String]
                      (ok (persistance/delete-player player-id league)))
             (DELETE "/:league/games" [league]
-                     :summary "Delete a game from the system - Currently not supported"
-                     :form-params [game-id :- String]
-                     (ok (persistance/delete-game game-id league)))
-            (DELETE "/:league/oldremove" [league]
                      :summary "Used to remove a single game of old. Should be used with extreme care - Make sure you backup the current list of games first"
                      :path-params [league :- String]
                      :form-params [game-id :- String]

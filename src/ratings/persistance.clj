@@ -240,42 +240,14 @@
                [])))
 
 
-
-
-
-
-
-;;The following methods are not working as intended on purpose. Will fix when front is ready
-(defn get-latest-game-between-players [white black games latest]
-  (if (first games)
-    (if (and (= white (:white (first games))) (= black (:black (first games))))
-      (if (or (not latest) (t/after? (c/from-string (:added (first games))) (c/from-string (:added latest))))
-        (get-latest-game-between-players white black (rest games) (first games))
-        (get-latest-game-between-players white black (rest games) latest))
-      (get-latest-game-between-players white black (rest games) latest))
-    latest))
-
-;;Delete game will only allow deletion of the latest game played by both players
-(defn delete-game [id league]
-  (let [db (get-db league)
-        game (mc/find-map-by-id db "games" (ObjectId. id))]
-    (if (= game (get-latest-game-between-players (:white game) (:black game) (mc/find-maps db "games") nil))
-      (do
-        (update-player (assoc (get-player-from-id (:white game) league) :rating (:white-old-rating game) :rating-rd (:white-old-rd game)) league)
-        (update-player (assoc (get-player-from-id (:black game) league) :rating (:black-old-rating game) :rating-rd (:black-old-rd game)) league)
-        (mc/remove-by-id db "games" (ObjectId. id))
-        game)
-      (throw (IllegalArgumentException. "To old")))))
-
-(defn- delete-all-games-from-player [id league db]
-  (let [games-without-player (filter #(and (not (= id (:black %))) (not (= id (:white %)))) (get-games db league))]
-    (reseed-db-with-games-and-players db league games-without-player)))
-
 ;;Deleting players will not change any ratings
 (defn delete-player [id league]
   (let [db (get-db league)
-        id (ObjectId. id)
-        player (mc/find-by-id db "players" id)]
-    (mc/remove-by-id db "players" id)
-    player))
+        _id (ObjectId. id)
+        player (mc/find-by-id db "players" _id)
+        games (mc/find-maps db "games")]
+    (if (find-first (fn [game] (or (= (:black game) id) (= (:white game) id))) games)
+      (throw (ex-info "Can't delete player" {:causes "Player has games"}))
+      (do (mc/remove-by-id db "players" _id)
+          "Player deleted"))))
 

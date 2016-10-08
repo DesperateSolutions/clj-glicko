@@ -30,7 +30,16 @@
   ([player league]
    (update-player (get-db league) player league))
   ([db player league]
-    (log/info (mc/update db "players" {:_id (:_id player)} player {:upsert true}))))
+   (log/info (mc/update db "players" {:_id (:_id player)} player {:upsert true})))
+  ([db player {old_rating :rating} league]
+    (log/info (mc/update db 
+                         "players" 
+                         {:_id (:_id player)} 
+                         (assoc player :old_ratings 
+                                (if (:old_ratings player)
+                                  (conj (:old_ratings player) old_rating)
+                                  (conj [] old_rating))) 
+                         {:upsert true}))))
 
 
 (defn get-players 
@@ -101,15 +110,27 @@
          player2 (get-player-from-id db black-id league)
          score (- (Integer. (first (clojure.string/split result #"-"))) (Integer. (last (clojure.string/split result #"-"))))]
      (cond (< 0 score)
-           (do (update-player db (glicko/get-glicko2 player1 player2 1) league)
-               (update-player db (glicko/get-glicko2 player2 player1 0) league))
+           (do (update-player db (glicko/get-glicko2 player1 player2 1) player1 league)
+               (update-player db (glicko/get-glicko2 player2 player1 0) player2 league))
            (> 0 score)
-           (do (update-player db (glicko/get-glicko2 player2 player1 1) league)
-               (update-player db (glicko/get-glicko2 player1 player2 0) league))
+           (do (update-player db (glicko/get-glicko2 player2 player1 1) player2 league)
+               (update-player db (glicko/get-glicko2 player1 player2 0) player1 league))
            :else
-           (do (update-player db (glicko/get-glicko2 player1 player2 0.5) league)
-               (update-player db (glicko/get-glicko2 player2 player1 0.5) league)))
+           (do (update-player db (glicko/get-glicko2 player1 player2 0.5) player1 league)
+               (update-player db (glicko/get-glicko2 player2 player1 0.5) player2 league)))
      (add-game db player1 player2 result league added))))
+
+(defn add-games-bulk
+  ([league games]
+   (add-games-bulk (get-db league) league games))
+  ([db league games]
+   (doseq [game games]
+     (score-game db
+                 (str (:white game)) 
+                 (str (:black game)) 
+                 (:result game)
+                 league
+                 nil))))
 
 (defn add-new-player 
   ([name league]
@@ -122,12 +143,7 @@
 (defn find-first [f users]
   (first (filter f users)))
 
-(defn add-games-bulk [league games]
-  (doseq [game games]
-    (score-game (str (:white game)) 
-                (str (:black game)) 
-                (:result game)
-                league)))
+
 
 (defn- delete-all-players 
   ([league]
@@ -226,42 +242,14 @@
                [])))
 
 
-
-
-
-
-
-;;The following methods are not working as intended on purpose. Will fix when front is ready
-(defn get-latest-game-between-players [white black games latest]
-  (if (first games)
-    (if (and (= white (:white (first games))) (= black (:black (first games))))
-      (if (or (not latest) (t/after? (c/from-string (:added (first games))) (c/from-string (:added latest))))
-        (get-latest-game-between-players white black (rest games) (first games))
-        (get-latest-game-between-players white black (rest games) latest))
-      (get-latest-game-between-players white black (rest games) latest))
-    latest))
-
-;;Delete game will only allow deletion of the latest game played by both players
-(defn delete-game [id league]
-  (let [db (get-db league)
-        game (mc/find-map-by-id db "games" (ObjectId. id))]
-    (if (= game (get-latest-game-between-players (:white game) (:black game) (mc/find-maps db "games") nil))
-      (do
-        (update-player (assoc (get-player-from-id (:white game) league) :rating (:white-old-rating game) :rating-rd (:white-old-rd game)) league)
-        (update-player (assoc (get-player-from-id (:black game) league) :rating (:black-old-rating game) :rating-rd (:black-old-rd game)) league)
-        (mc/remove-by-id db "games" (ObjectId. id))
-        game)
-      (throw (IllegalArgumentException. "To old")))))
-
-(defn- delete-all-games-from-player [id league db]
-  (let [games-without-player (filter #(and (not (= id (:black %))) (not (= id (:white %)))) (get-games db league))]
-    (reseed-db-with-games-and-players db league games-without-player)))
-
 ;;Deleting players will not change any ratings
 (defn delete-player [id league]
   (let [db (get-db league)
-        id (ObjectId. id)
-        player (mc/find-by-id db "players" id)]
-    (mc/remove-by-id db "players" id)
-    player))
+        _id (ObjectId. id)
+        player (mc/find-by-id db "players" _id)
+        games (mc/find-maps db "games")]
+    (if (find-first (fn [game] (or (= (:black game) id) (= (:white game) id))) games)
+      (throw (ex-info "Can't delete player" {:causes "Player has games"}))
+      (do (mc/remove-by-id db "players" _id)
+          "Player deleted"))))
 

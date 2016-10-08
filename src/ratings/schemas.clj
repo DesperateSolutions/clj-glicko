@@ -19,8 +19,7 @@
 (s/defschema league
   {:name s/Str
    :_id s/Any
-   :settings settings
-   })
+   :settings settings})
 
 (s/defschema game
   {:white s/Str
@@ -30,9 +29,9 @@
    :_id s/Any})
 
 (s/defschema bulkgames
-  {:white s/Str
-   :black s/Str
-   :result s/Str})
+  [{:white s/Str
+     :black s/Str
+     :result s/Str}])
 
 (s/defschema reseed
   {:white s/Str

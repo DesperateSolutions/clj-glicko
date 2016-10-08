@@ -47,7 +47,7 @@
                    :summary "Add a collection of games - Result must be in the format of X-Y, example 1-0"
                    :path-params [league :- String]
                    :body [games bulkgames]
-                   (ok (println games) (persistance/add-games-bulk league games)))
+                   (ok (persistance/add-games-bulk league games)))
             (POST "/:league/players" [league]
                    :summary "Add a player to the system"
                    :path-params [league :- String]

@@ -29,6 +29,8 @@
 (defn- update-player 
   ([player league]
    (update-player (get-db league) player league))
+  ([db player league]
+   (log/info (mc/update db "players" {:_id (:_id player)} player {:upsert true})))
   ([db player {old_rating :rating} league]
     (log/info (mc/update db 
                          "players" 

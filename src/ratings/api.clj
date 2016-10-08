@@ -66,7 +66,7 @@
             (POST "/:league/reseed" [league]
                   :summary "Reseeds the db with all the games from the bulk parameter. Deletes all games currently in db"
                   :path-params [league :- String]
-                  :body-params [reseed]
+                  :body [reseed bulkgames]
                   (ok (persistance/reseed-db-with-games-and-players league (json/parse-string reseed true))))
             (DELETE "/:league/players" [league]
                      :summary "Delete a player from the system - Will not affect any rating"

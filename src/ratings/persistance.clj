@@ -29,8 +29,15 @@
 (defn- update-player 
   ([player league]
    (update-player (get-db league) player league))
-  ([db player league]
-    (log/info (mc/update db "players" {:_id (:_id player)} player {:upsert true}))))
+  ([db player {old_rating :rating} league]
+    (log/info (mc/update db 
+                         "players" 
+                         {:_id (:_id player)} 
+                         (assoc player :old_ratings 
+                                (if (:old_ratings player)
+                                  (conj (:old_ratings player) old_rating)
+                                  (conj [] old_rating))) 
+                         {:upsert true}))))
 
 
 (defn get-players 
@@ -101,14 +108,14 @@
          player2 (get-player-from-id db black-id league)
          score (- (Integer. (first (clojure.string/split result #"-"))) (Integer. (last (clojure.string/split result #"-"))))]
      (cond (< 0 score)
-           (do (update-player db (glicko/get-glicko2 player1 player2 1) league)
-               (update-player db (glicko/get-glicko2 player2 player1 0) league))
+           (do (update-player db (glicko/get-glicko2 player1 player2 1) player1 league)
+               (update-player db (glicko/get-glicko2 player2 player1 0) player2 league))
            (> 0 score)
-           (do (update-player db (glicko/get-glicko2 player2 player1 1) league)
-               (update-player db (glicko/get-glicko2 player1 player2 0) league))
+           (do (update-player db (glicko/get-glicko2 player2 player1 1) player2 league)
+               (update-player db (glicko/get-glicko2 player1 player2 0) player1 league))
            :else
-           (do (update-player db (glicko/get-glicko2 player1 player2 0.5) league)
-               (update-player db (glicko/get-glicko2 player2 player1 0.5) league)))
+           (do (update-player db (glicko/get-glicko2 player1 player2 0.5) player1 league)
+               (update-player db (glicko/get-glicko2 player2 player1 0.5) player2 league)))
      (add-game db player1 player2 result league added))))
 
 (defn add-games-bulk
